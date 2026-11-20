@@ -21,12 +21,26 @@ if (!Array.isArray(ships)) {
 
 const VALID_RARITIES = new Set(['UR', 'SSR', 'SR', 'R', 'N']);
 const VALID_PLANS = new Set(['PR', 'DR']);
+const VALID_TAGS = new Set([
+  // 雰囲気・性格
+  'クール', '元気', '甘えんぼ', 'お姉さん系', '凛々しい', 'ふんわり', '勝ち気', 'ミステリアス', '妖しい', '清楚',
+  // 見た目モチーフ
+  '狐耳', '猫耳', '兎耳', '角', '翼', '悪魔系', '天使系', '和風', '中華風', 'ゴシック', 'メカ寄り', '騎士風',
+  // 髪
+  '長髪', '短髪', 'ツインテール', 'ポニーテール', '銀髪', '黒髪', '金髪', 'ピンク髪', '紫髪', '青髪',
+  // 着せ替えの種類
+  '水着', 'ドレス', 'メイド', '修道女', '巫女', '制服', 'チャイナ', 'バニー', 'ウェディング', 'パジャマ',
+  // その他
+  'コラボ艦', '着せ替え多数', 'Live2D着せ替えあり',
+]);
 const EQUIP_LABEL_RE = /\(T[0-3]\)|^e\d+_\d+|^\d{3}-\d+/i;
 const seenIds = new Set();
 const errors = [];
 const warnings = [];
 
 let totalImages = 0;
+let taggedShipsCount = 0;
+const tagCounts = {};
 const rarityCounts = {};
 const planCounts = { UR_NORMAL: 0, DR: 0, PR: 0 };
 const factionCounts = {};
@@ -79,6 +93,23 @@ ships.forEach((s, idx) => {
     });
   }
 
+  if (!Array.isArray(s.tags)) {
+    errors.push(`${prefix} tags must be an array`);
+  } else {
+    if (s.tags.length > 0) taggedShipsCount += 1;
+    const seenTags = new Set();
+    s.tags.forEach(tag => {
+      if (!VALID_TAGS.has(tag)) {
+        errors.push(`${prefix} Invalid/unknown tag: "${tag}"`);
+      } else if (seenTags.has(tag)) {
+        errors.push(`${prefix} Duplicate tag: "${tag}"`);
+      } else {
+        seenTags.add(tag);
+        tagCounts[tag] = (tagCounts[tag] || 0) + 1;
+      }
+    });
+  }
+
   if (!Array.isArray(s.skills)) {
     errors.push(`${prefix} skills must be an array`);
   } else if (s.skills.length === 0) {
@@ -100,9 +131,11 @@ ships.forEach((s, idx) => {
 console.log('=== verify_all.js Report ===');
 console.log(`Total ships: ${ships.length}`);
 console.log(`Total images: ${totalImages}`);
+console.log(`Tagged ships: ${taggedShipsCount}/${ships.length}`);
 console.log('By rarity:', rarityCounts);
 console.log('UR breakdown:', { '通常UR': planCounts.UR_NORMAL, '計画艦DR': planCounts.DR });
 console.log('By faction:', factionCounts);
+console.log('By tag:', tagCounts);
 
 if (warnings.length > 0) {
   console.log(`\nWarnings (${warnings.length}):`);

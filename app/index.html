@@ -85,6 +85,16 @@
         </label>
       </div>
 
+      <div class="tag-filter-section">
+        <div class="tag-filter-header">
+          <button type="button" id="tagToggleBtn" class="btn-toggle" aria-expanded="false">
+            タグで絞り込む <span id="selectedTagCountBadge" class="tag-count-badge hidden">0</span>
+          </button>
+          <button type="button" id="clearTagsBtn" class="btn-secondary hidden">選択タグを解除</button>
+        </div>
+        <div id="tagFilterPanel" class="tag-filter-panel hidden"></div>
+      </div>
+
       <div class="result-bar">
         <span id="resultCountText">0 隻を表示中</span>
       </div>

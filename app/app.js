@@ -15,6 +15,30 @@
   let onlyFav = false;
   let currentModalShip = null;
   let currentImgIndex = 0;
+  const selectedTags = new Set();
+
+  const TAG_GROUPS = [
+    {
+      label: '雰囲気・性格',
+      tags: ['クール', '元気', '甘えんぼ', 'お姉さん系', '凛々しい', 'ふんわり', '勝ち気', 'ミステリアス', '妖しい', '清楚'],
+    },
+    {
+      label: '見た目モチーフ',
+      tags: ['狐耳', '猫耳', '兎耳', '角', '翼', '悪魔系', '天使系', '和風', '中華風', 'ゴシック', 'メカ寄り', '騎士風'],
+    },
+    {
+      label: '髪',
+      tags: ['長髪', '短髪', 'ツインテール', 'ポニーテール', '銀髪', '黒髪', '金髪', 'ピンク髪', '紫髪', '青髪'],
+    },
+    {
+      label: '着せ替えの種類',
+      tags: ['水着', 'ドレス', 'メイド', '修道女', '巫女', '制服', 'チャイナ', 'バニー', 'ウェディング', 'パジャマ'],
+    },
+    {
+      label: 'その他',
+      tags: ['コラボ艦', '着せ替え多数', 'Live2D着せ替えあり'],
+    },
+  ];
 
   const els = {
     totalCountPill: document.getElementById('totalCountPill'),
@@ -26,6 +50,10 @@
     typeFilter: document.getElementById('typeFilter'),
     factionFilter: document.getElementById('factionFilter'),
     sortSelect: document.getElementById('sortSelect'),
+    tagToggleBtn: document.getElementById('tagToggleBtn'),
+    selectedTagCountBadge: document.getElementById('selectedTagCountBadge'),
+    clearTagsBtn: document.getElementById('clearTagsBtn'),
+    tagFilterPanel: document.getElementById('tagFilterPanel'),
     resultCountText: document.getElementById('resultCountText'),
     shipGrid: document.getElementById('shipGrid'),
     emptyState: document.getElementById('emptyState'),
@@ -119,6 +147,37 @@
     });
   }
 
+  function renderTagFilterPanel() {
+    const counts = {};
+    ships.forEach(s => {
+      (s.tags || []).forEach(t => {
+        counts[t] = (counts[t] || 0) + 1;
+      });
+    });
+
+    els.tagFilterPanel.innerHTML = TAG_GROUPS.map(g => {
+      const chips = g.tags
+        .filter(t => counts[t] > 0)
+        .map(t => {
+          const active = selectedTags.has(t);
+          return `<button type="button" class="tag-chip ${active ? 'active' : ''}" data-tag="${escapeHtml(t)}" aria-pressed="${active}">${escapeHtml(t)}<span class="tag-chip-count">${counts[t]}</span></button>`;
+        }).join('');
+      if (!chips) return '';
+      return `
+        <div class="tag-group-row">
+          <div class="tag-group-label">${escapeHtml(g.label)}</div>
+          <div class="tag-chips-wrap">${chips}</div>
+        </div>
+      `;
+    }).join('');
+
+    const selCount = selectedTags.size;
+    els.selectedTagCountBadge.textContent = String(selCount);
+    els.selectedTagCountBadge.classList.toggle('hidden', selCount === 0);
+    els.clearTagsBtn.classList.toggle('hidden', selCount === 0);
+    els.tagToggleBtn.classList.toggle('active', selCount > 0 || !els.tagFilterPanel.classList.contains('hidden'));
+  }
+
   function getRarityRank(ship) {
     if (ship.plan === 'DR') return 5;
     const map = { UR: 4, SSR: 3, SR: 2, R: 1, N: 0 };
@@ -143,6 +202,12 @@
       if (rarity === 'UR' && s.rarity !== 'UR') return false;
       if (type !== 'ALL' && s.type !== type) return false;
       if (faction !== 'ALL' && s.faction !== faction) return false;
+      if (selectedTags.size > 0) {
+        const shipTags = s.tags || [];
+        for (const t of selectedTags) {
+          if (!shipTags.includes(t)) return false;
+        }
+      }
       if (q) {
         const hay = `${s.name} ${s.nameEn || ''} ${s.class || ''} ${s.id}`.toLowerCase();
         if (!hay.includes(q)) return false;
@@ -274,6 +339,13 @@
             <tr><th>イラスト</th><td>${escapeHtml(s.illustrator || '-')}</td></tr>
             <tr><th>入手方法</th><td>${escapeHtml(s.acquisition || '-')}</td></tr>
           </table>
+
+          ${(s.tags && s.tags.length) ? `
+            <h3 class="section-heading">タグ</h3>
+            <div class="modal-tags-wrap">
+              ${s.tags.map(t => `<span class="modal-tag-pill">${escapeHtml(t)}</span>`).join('')}
+            </div>
+          ` : ''}
 
           <h3 class="section-heading">スキル</h3>
           <div class="skill-list">${skillsHtml}</div>
@@ -434,6 +506,28 @@
     renderGrid();
   });
 
+  els.tagToggleBtn.addEventListener('click', () => {
+    const isHidden = els.tagFilterPanel.classList.toggle('hidden');
+    els.tagToggleBtn.setAttribute('aria-expanded', String(!isHidden));
+    els.tagToggleBtn.classList.toggle('active', !isHidden || selectedTags.size > 0);
+  });
+
+  els.tagFilterPanel.addEventListener('click', e => {
+    const chip = e.target.closest('[data-tag]');
+    if (!chip) return;
+    const tag = chip.dataset.tag;
+    if (selectedTags.has(tag)) selectedTags.delete(tag);
+    else selectedTags.add(tag);
+    renderTagFilterPanel();
+    renderGrid();
+  });
+
+  els.clearTagsBtn.addEventListener('click', () => {
+    selectedTags.clear();
+    renderTagFilterPanel();
+    renderGrid();
+  });
+
   els.resetBtn.addEventListener('click', () => {
     els.searchInput.value = '';
     els.rarityFilter.value = 'ALL';
@@ -443,6 +537,8 @@
     onlyFav = false;
     els.favFilterBtn.classList.remove('active');
     els.favFilterBtn.setAttribute('aria-pressed', 'false');
+    selectedTags.clear();
+    renderTagFilterPanel();
     renderGrid();
   });
 
@@ -697,6 +793,7 @@
   }
 
   populateFilterOptions();
+  renderTagFilterPanel();
   updateHeaderStats();
   renderGrid();
 })();

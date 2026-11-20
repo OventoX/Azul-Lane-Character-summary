@@ -12,6 +12,15 @@ const SHIPS_DATA = [
     "faction": "重桜",
     "cv": "安野希世乃",
     "illustrator": "木shiyo",
+    "tags": [
+      "お姉さん系",
+      "清楚",
+      "和風",
+      "長髪",
+      "黒髪",
+      "ウェディング",
+      "Live2D着せ替えあり"
+    ],
     "skills": [
       {
         "name": "轟火連嶺",
@@ -67,6 +76,18 @@ const SHIPS_DATA = [
     "faction": "鉄血",
     "cv": "生天目仁美",
     "illustrator": "デフォルト： Manjuuアートグループ 着せ替え「雅楽の闇衣」： Enka 着せ替え「ユリカゴのセレモニー」： 侑了介侑",
+    "tags": [
+      "お姉さん系",
+      "妖しい",
+      "角",
+      "悪魔系",
+      "ゴシック",
+      "長髪",
+      "黒髪",
+      "水着",
+      "ウェディング",
+      "Live2D着せ替えあり"
+    ],
     "skills": [
       {
         "name": "破壊のSinfonie",
@@ -134,6 +155,13 @@ const SHIPS_DATA = [
     "faction": "ロイヤル",
     "cv": "今井麻美",
     "illustrator": "Manjuuアートグループ",
+    "tags": [
+      "勝ち気",
+      "凛々しい",
+      "長髪",
+      "銀髪",
+      "水着"
+    ],
     "skills": [
       {
         "name": "勇闘のプライベーティア",
@@ -182,6 +210,13 @@ const SHIPS_DATA = [
     "faction": "その他・コラボ",
     "cv": "下田麻美",
     "illustrator": "梦咲楓(かえで)",
+    "tags": [
+      "元気",
+      "メカ寄り",
+      "ツインテール",
+      "ピンク髪",
+      "コラボ艦"
+    ],
     "skills": [
       {
         "name": "改造娘MKIII",
@@ -218,6 +253,17 @@ const SHIPS_DATA = [
     "faction": "重桜",
     "cv": "能登麻美子",
     "illustrator": "侑了个侑",
+    "tags": [
+      "ふんわり",
+      "ミステリアス",
+      "狐耳",
+      "和風",
+      "長髪",
+      "銀髪",
+      "水着",
+      "ウェディング",
+      "着せ替え多数"
+    ],
     "skills": [
       {
         "name": "幾望の嵐",
@@ -286,6 +332,17 @@ const SHIPS_DATA = [
     "faction": "ユニオン",
     "cv": "富田美憂",
     "illustrator": "全班最菜嘤嘤嘤(YYY_( ´･ᴗ･` ))",
+    "tags": [
+      "元気",
+      "勝ち気",
+      "兎耳",
+      "メカ寄り",
+      "長髪",
+      "青髪",
+      "水着",
+      "バニー",
+      "ウェディング"
+    ],
     "skills": [
       {
         "name": "ドラゴンファイア！",
@@ -353,6 +410,18 @@ const SHIPS_DATA = [
     "faction": "鉄血",
     "cv": "佐倉綾音",
     "illustrator": "雲桑",
+    "tags": [
+      "お姉さん系",
+      "凛々しい",
+      "角",
+      "悪魔系",
+      "ゴシック",
+      "長髪",
+      "銀髪",
+      "メイド",
+      "チャイナ",
+      "ウェディング"
+    ],
     "skills": [
       {
         "name": "飲み干す黄金の渦",
@@ -414,6 +483,14 @@ const SHIPS_DATA = [
     "faction": "重桜",
     "cv": "佐藤聡美",
     "illustrator": "ШXZ",
+    "tags": [
+      "勝ち気",
+      "角",
+      "和風",
+      "長髪",
+      "銀髪",
+      "ウェディング"
+    ],
     "skills": [
       {
         "name": "天雷罪滅",
@@ -480,6 +557,16 @@ const SHIPS_DATA = [
     "faction": "重桜",
     "cv": "早見沙織",
     "illustrator": "原案: 黒星紅白 制作:株式会社manjuu/ 株式会社コンパイルハート",
+    "tags": [
+      "元気",
+      "兎耳",
+      "和風",
+      "長髪",
+      "黒髪",
+      "水着",
+      "バニー",
+      "着せ替え多数"
+    ],
     "skills": [
       {
         "name": "疾風迅雷",
@@ -552,6 +639,16 @@ const SHIPS_DATA = [
     "faction": "鉄血",
     "cv": "山村響",
     "illustrator": "お久しぶり",
+    "tags": [
+      "クール",
+      "お姉さん系",
+      "ゴシック",
+      "メカ寄り",
+      "短髪",
+      "黒髪",
+      "メイド",
+      "ウェディング"
+    ],
     "skills": [
       {
         "name": "桂冠者の韻律論",
@@ -608,6 +705,13 @@ const SHIPS_DATA = [
     "faction": "北方連合",
     "cv": "本渡楓",
     "illustrator": "Bach Do(Dishwasher1910)",
+    "tags": [
+      "クール",
+      "凛々しい",
+      "騎士風",
+      "長髪",
+      "銀髪"
+    ],
     "skills": [
       {
         "name": "豪勇な戦闘射撃（派手）",
@@ -658,6 +762,14 @@ const SHIPS_DATA = [
     "faction": "ロイヤル",
     "cv": "中島由貴",
     "illustrator": "ASK",
+    "tags": [
+      "凛々しい",
+      "元気",
+      "騎士風",
+      "長髪",
+      "金髪",
+      "メイド"
+    ],
     "skills": [
       {
         "name": "煌めけ！ロイヤルサンシャイン！",
@@ -703,6 +815,14 @@ const SHIPS_DATA = [
     "faction": "アイリス",
     "cv": "千本木彩花",
     "illustrator": "",
+    "tags": [
+      "ふんわり",
+      "ミステリアス",
+      "翼",
+      "天使系",
+      "長髪",
+      "金髪"
+    ],
     "skills": [
       {
         "name": "協戦快勝のウタ",
@@ -758,6 +878,15 @@ const SHIPS_DATA = [
     "faction": "ロイヤル",
     "cv": "村上まなつ",
     "illustrator": "お久しぶり",
+    "tags": [
+      "ふんわり",
+      "清楚",
+      "翼",
+      "天使系",
+      "長髪",
+      "銀髪",
+      "水着"
+    ],
     "skills": [
       {
         "name": "歓喜のグリーミングライト",
@@ -812,6 +941,15 @@ const SHIPS_DATA = [
     "faction": "重桜",
     "cv": "Lynn",
     "illustrator": "Bach Do(Dishwasher1910)",
+    "tags": [
+      "お姉さん系",
+      "凛々しい",
+      "狐耳",
+      "和風",
+      "長髪",
+      "黒髪",
+      "ウェディング"
+    ],
     "skills": [
       {
         "name": "紫電雷嵐",
@@ -868,6 +1006,16 @@ const SHIPS_DATA = [
     "faction": "ユニオン",
     "cv": "優木かな",
     "illustrator": "kurumi普拉斯+",
+    "tags": [
+      "お姉さん系",
+      "清楚",
+      "メカ寄り",
+      "長髪",
+      "銀髪",
+      "水着",
+      "メイド",
+      "Live2D着せ替えあり"
+    ],
     "skills": [
       {
         "name": "ファイティングレディ",
@@ -924,6 +1072,15 @@ const SHIPS_DATA = [
     "faction": "ロイヤル",
     "cv": "ゆかな",
     "illustrator": "KIn",
+    "tags": [
+      "お姉さん系",
+      "妖しい",
+      "角",
+      "長髪",
+      "金髪",
+      "メイド",
+      "修道女"
+    ],
     "skills": [
       {
         "name": "慈悲なく容赦せず情けかけず",
@@ -974,6 +1131,15 @@ const SHIPS_DATA = [
     "faction": "鉄血",
     "cv": "福原綾香",
     "illustrator": "kurumi普拉斯+",
+    "tags": [
+      "クール",
+      "凛々しい",
+      "騎士風",
+      "メカ寄り",
+      "長髪",
+      "金髪",
+      "水着"
+    ],
     "skills": [
       {
         "name": "緋闇に殉ぜぬ破滅の力",
@@ -1025,6 +1191,14 @@ const SHIPS_DATA = [
     "faction": "鉄血",
     "cv": "松井恵理子",
     "illustrator": "雲桑",
+    "tags": [
+      "お姉さん系",
+      "妖しい",
+      "角",
+      "悪魔系",
+      "長髪",
+      "ピンク髪"
+    ],
     "skills": [
       {
         "name": "歓喜求む血戦の戯れ",
@@ -1080,6 +1254,16 @@ const SHIPS_DATA = [
     "faction": "ユニオン",
     "cv": "青山吉能",
     "illustrator": "YD",
+    "tags": [
+      "クール",
+      "ミステリアス",
+      "角",
+      "メカ寄り",
+      "長髪",
+      "銀髪",
+      "バニー",
+      "ウェディング"
+    ],
     "skills": [
       {
         "name": "マルチリンクシステムLOCK",
@@ -1134,6 +1318,15 @@ const SHIPS_DATA = [
     "faction": "重桜",
     "cv": "三森すずこ",
     "illustrator": "KIn",
+    "tags": [
+      "清楚",
+      "ふんわり",
+      "和風",
+      "長髪",
+      "銀髪",
+      "水着",
+      "ウェディング"
+    ],
     "skills": [
       {
         "name": "諸悪調伏、人の世のために",
@@ -1184,6 +1377,13 @@ const SHIPS_DATA = [
     "faction": "ユニオン",
     "cv": "長縄まりあ",
     "illustrator": "梦咲楓(かえで)",
+    "tags": [
+      "ふんわり",
+      "兎耳",
+      "メカ寄り",
+      "ツインテール",
+      "銀髪"
+    ],
     "skills": [
       {
         "name": "やる気もりもり",
@@ -1238,6 +1438,12 @@ const SHIPS_DATA = [
     "faction": "ユニオン",
     "cv": "各務華梨",
     "illustrator": "",
+    "tags": [
+      "元気",
+      "メカ寄り",
+      "長髪",
+      "金髪"
+    ],
     "skills": [
       {
         "name": "バトルスター・ファイアワーク",
@@ -1288,6 +1494,15 @@ const SHIPS_DATA = [
     "faction": "北方連合",
     "cv": "戸松遥",
     "illustrator": "",
+    "tags": [
+      "クール",
+      "凛々しい",
+      "騎士風",
+      "長髪",
+      "銀髪",
+      "ドレス",
+      "Live2D着せ替えあり"
+    ],
     "skills": [
       {
         "name": "突き抜け、氷嵐を破る霜鉾",
@@ -1344,6 +1559,14 @@ const SHIPS_DATA = [
     "faction": "ヴィシア",
     "cv": "日野まり",
     "illustrator": "ミモザ",
+    "tags": [
+      "妖しい",
+      "ゴシック",
+      "長髪",
+      "紫髪",
+      "水着",
+      "Live2D着せ替えあり"
+    ],
     "skills": [
       {
         "name": "悪罪滅殺の斧",
@@ -1410,6 +1633,15 @@ const SHIPS_DATA = [
     "faction": "アイリス",
     "cv": "豊崎愛生",
     "illustrator": "肥肥肥海",
+    "tags": [
+      "元気",
+      "ミステリアス",
+      "翼",
+      "天使系",
+      "騎士風",
+      "長髪",
+      "銀髪"
+    ],
     "skills": [
       {
         "name": "攻撃コマンド「聖裁降臨」",
@@ -1461,6 +1693,15 @@ const SHIPS_DATA = [
     "faction": "サディア",
     "cv": "鈴代紗弓",
     "illustrator": "",
+    "tags": [
+      "ふんわり",
+      "翼",
+      "天使系",
+      "長髪",
+      "金髪",
+      "バニー",
+      "Live2D着せ替えあり"
+    ],
     "skills": [
       {
         "name": "永遠の眠りへご招待",
@@ -1516,6 +1757,13 @@ const SHIPS_DATA = [
     "faction": "北方連合",
     "cv": "安済知佳",
     "illustrator": "KIn",
+    "tags": [
+      "クール",
+      "猫耳",
+      "メカ寄り",
+      "長髪",
+      "銀髪"
+    ],
     "skills": [
       {
         "name": "破壊性接続・ピークロードクラッシュ",
@@ -1576,6 +1824,15 @@ const SHIPS_DATA = [
     "faction": "重桜",
     "cv": "沢城みゆき",
     "illustrator": "",
+    "tags": [
+      "お姉さん系",
+      "清楚",
+      "狐耳",
+      "和風",
+      "長髪",
+      "黒髪",
+      "ウェディング"
+    ],
     "skills": [
       {
         "name": "謀を伐つは万世を期す",
@@ -1626,6 +1883,12 @@ const SHIPS_DATA = [
     "faction": "鉄血",
     "cv": "新井里美",
     "illustrator": "",
+    "tags": [
+      "元気",
+      "メカ寄り",
+      "ポニーテール",
+      "黒髪"
+    ],
     "skills": [
       {
         "name": "バーストシール！",
@@ -1680,6 +1943,13 @@ const SHIPS_DATA = [
     "faction": "鉄血",
     "cv": "恒松あゆみ",
     "illustrator": "",
+    "tags": [
+      "クール",
+      "凛々しい",
+      "騎士風",
+      "短髪",
+      "銀髪"
+    ],
     "skills": [
       {
         "name": "恐れなき勇傑の翼",
@@ -1730,6 +2000,13 @@ const SHIPS_DATA = [
     "faction": "サディア",
     "cv": "朝井彩加",
     "illustrator": "",
+    "tags": [
+      "元気",
+      "翼",
+      "天使系",
+      "長髪",
+      "黒髪"
+    ],
     "skills": [
       {
         "name": "黒塗りの献身",
@@ -1780,6 +2057,13 @@ const SHIPS_DATA = [
     "faction": "ロイヤル",
     "cv": "米澤円",
     "illustrator": "",
+    "tags": [
+      "クール",
+      "凛々しい",
+      "騎士風",
+      "長髪",
+      "青髪"
+    ],
     "skills": [
       {
         "name": "その刃に勝利を銘ずる",
@@ -1828,6 +2112,12 @@ const SHIPS_DATA = [
     "faction": "ロイヤル",
     "cv": "大西沙織",
     "illustrator": "",
+    "tags": [
+      "凛々しい",
+      "騎士風",
+      "短髪",
+      "金髪"
+    ],
     "skills": [
       {
         "name": "万象燃やすライオンフレイム",
@@ -1879,6 +2169,14 @@ const SHIPS_DATA = [
     "faction": "鉄血",
     "cv": "伊瀬茉莉也",
     "illustrator": "",
+    "tags": [
+      "勝ち気",
+      "角",
+      "悪魔系",
+      "ゴシック",
+      "長髪",
+      "ピンク髪"
+    ],
     "skills": [
       {
         "name": "終焉裁決・斬撃翔翼",
@@ -1928,6 +2226,14 @@ const SHIPS_DATA = [
     "faction": "その他・コラボ",
     "cv": "井上喜久子",
     "illustrator": "",
+    "tags": [
+      "お姉さん系",
+      "清楚",
+      "翼",
+      "長髪",
+      "金髪",
+      "コラボ艦"
+    ],
     "skills": [
       {
         "name": "降りしきる光の星",
@@ -1976,6 +2282,13 @@ const SHIPS_DATA = [
     "faction": "重桜",
     "cv": "小澤みのり",
     "illustrator": "",
+    "tags": [
+      "角",
+      "和風",
+      "長髪",
+      "銀髪",
+      "ウェディング"
+    ],
     "skills": [
       {
         "name": "晴れやかなれ、彼方の空",
@@ -2020,6 +2333,13 @@ const SHIPS_DATA = [
     "faction": "重桜",
     "cv": "井澤詩織",
     "illustrator": "",
+    "tags": [
+      "妖しい",
+      "お姉さん系",
+      "和風",
+      "長髪",
+      "銀髪"
+    ],
     "skills": [
       {
         "name": "香雲炷く栴檀",
@@ -2070,6 +2390,12 @@ const SHIPS_DATA = [
     "faction": "ユニオン",
     "cv": "諸星すみれ",
     "illustrator": "",
+    "tags": [
+      "元気",
+      "ポニーテール",
+      "金髪",
+      "メイド"
+    ],
     "skills": [
       {
         "name": "やらかしレジェンド",
@@ -2118,6 +2444,13 @@ const SHIPS_DATA = [
     "faction": "ユニオン",
     "cv": "篠田みなみ",
     "illustrator": "Saru",
+    "tags": [
+      "お姉さん系",
+      "清楚",
+      "長髪",
+      "ピンク髪",
+      "メイド"
+    ],
     "skills": [
       {
         "name": "ブルーゴースト",
@@ -2162,6 +2495,12 @@ const SHIPS_DATA = [
     "faction": "北方連合",
     "cv": "田所あずさ",
     "illustrator": "",
+    "tags": [
+      "凛々しい",
+      "騎士風",
+      "長髪",
+      "青髪"
+    ],
     "skills": [
       {
         "name": "霜刻む剣",
@@ -2210,6 +2549,12 @@ const SHIPS_DATA = [
     "faction": "鉄血",
     "cv": "小山内怜央",
     "illustrator": "",
+    "tags": [
+      "角",
+      "悪魔系",
+      "長髪",
+      "紫髪"
+    ],
     "skills": [
       {
         "name": "果ての淵に響かせて",
@@ -2254,6 +2599,12 @@ const SHIPS_DATA = [
     "faction": "鉄血",
     "cv": "明坂聡美",
     "illustrator": "",
+    "tags": [
+      "悪魔系",
+      "ゴシック",
+      "長髪",
+      "黒髪"
+    ],
     "skills": [
       {
         "name": "鉄腕の裁きは終章にて",
@@ -2299,6 +2650,12 @@ const SHIPS_DATA = [
     "faction": "鉄血",
     "cv": "小鹿なお",
     "illustrator": "",
+    "tags": [
+      "角",
+      "メカ寄り",
+      "短髪",
+      "ピンク髪"
+    ],
     "skills": [
       {
         "name": "超空裂く古龍の翼",
@@ -2342,6 +2699,11 @@ const SHIPS_DATA = [
     "faction": "その他・コラボ",
     "cv": "中島由貴",
     "illustrator": "",
+    "tags": [
+      "長髪",
+      "銀髪",
+      "コラボ艦"
+    ],
     "skills": [
       {
         "name": "煌めいて、ペドレーリアの風",
@@ -2384,6 +2746,13 @@ const SHIPS_DATA = [
     "faction": "ロイヤル",
     "cv": "和泉風花",
     "illustrator": "",
+    "tags": [
+      "ふんわり",
+      "お姉さん系",
+      "ゴシック",
+      "長髪",
+      "銀髪"
+    ],
     "skills": [
       {
         "name": "抜かれぬ歯牙の旋律を奏でよう",
@@ -2432,6 +2801,14 @@ const SHIPS_DATA = [
     "faction": "重桜",
     "cv": "中村カンナ",
     "illustrator": "",
+    "tags": [
+      "角",
+      "和風",
+      "メカ寄り",
+      "長髪",
+      "黒髪",
+      "Live2D着せ替えあり"
+    ],
     "skills": [
       {
         "name": "滅燼する燒燬の豪火",
@@ -2454,7 +2831,7 @@ const SHIPS_DATA = [
     "images": [
       {
         "label": "通常",
-        "url": "https://azurlane.wikiru.jp/attach2/E5AE89E59C9F_417A756368695F636C6F73652D75705F7139352E77656270.webp",
+        "url": "https://azurlane.wikiru.jp/attach2/E5AE89E59C9F_417A756368695F66756C6C5F7138352E77656270.webp",
         "source": "アズールレーン攻略Wiki (wikiru)",
         "credit": "© Manjuu / Yongshi / Yostar（出典: azurlane.wikiru.jp）"
       },

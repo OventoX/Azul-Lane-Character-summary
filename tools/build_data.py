@@ -64,6 +64,59 @@ TYPE_MAP = {
 }
 
 
+AZUCHI_FULL_IMG = 'https://azurlane.wikiru.jp/attach2/E5AE89E59C9F_417A756368695F66756C6C5F7138352E77656270.webp'
+
+# 出典テキスト（キャラクター解説・着せ替え欄）および通常立ち絵の目視確認に基づくタグ定義
+SHIP_TAGS_BASE = {
+    '吾妻': ['お姉さん系', '清楚', '和風', '長髪', '黒髪', 'ウェディング'],
+    'フリードリヒ・デア・グローセ': ['お姉さん系', '妖しい', '角', '悪魔系', 'ゴシック', '長髪', '黒髪', '水着', 'ウェディング'],
+    'ドレイク': ['勝ち気', '凛々しい', '長髪', '銀髪', '水着'],
+    '特装型ブリMKIII': ['元気', 'メカ寄り', 'ツインテール', 'ピンク髪'],
+    '信濃': ['ふんわり', 'ミステリアス', '狐耳', '和風', '長髪', '銀髪', '水着', 'ウェディング'],
+    'ニュージャージー': ['元気', '勝ち気', '兎耳', 'メカ寄り', '長髪', '青髪', '水着', 'バニー', 'ウェディング'],
+    'エーギル': ['お姉さん系', '凛々しい', '角', '悪魔系', 'ゴシック', '長髪', '銀髪', 'メイド', 'チャイナ', 'ウェディング'],
+    '白龍': ['勝ち気', '角', '和風', '長髪', '銀髪', 'ウェディング'],
+    '島風': ['元気', '兎耳', '和風', '長髪', '黒髪', '水着', 'バニー'],
+    'ウルリッヒ・フォン・フッテン': ['クール', 'お姉さん系', 'ゴシック', 'メカ寄り', '短髪', '黒髪', 'メイド', 'ウェディング'],
+    'クロンシュタット': ['クール', '凛々しい', '騎士風', '長髪', '銀髪'],
+    'ヴァンガード': ['凛々しい', '元気', '騎士風', '長髪', '金髪', 'メイド'],
+    'ブレスト': ['ふんわり', 'ミステリアス', '翼', '天使系', '長髪', '金髪'],
+    'プリマス': ['ふんわり', '清楚', '翼', '天使系', '長髪', '銀髪', '水着'],
+    '武蔵': ['お姉さん系', '凛々しい', '狐耳', '和風', '長髪', '黒髪', 'ウェディング'],
+    'ヨークタウンII': ['お姉さん系', '清楚', 'メカ寄り', '長髪', '銀髪', '水着', 'メイド'],
+    'インプラカブル': ['お姉さん系', '妖しい', '角', '長髪', '金髪', 'メイド', '修道女'],
+    'ビスマルクZwei': ['クール', '凛々しい', '騎士風', 'メカ寄り', '長髪', '金髪', '水着'],
+    'ヒンデンブルク': ['お姉さん系', '妖しい', '角', '悪魔系', '長髪', 'ピンク髪'],
+    'キアサージ': ['クール', 'ミステリアス', '角', 'メカ寄り', '長髪', '銀髪', 'バニー', 'ウェディング'],
+    '雲仙': ['清楚', 'ふんわり', '和風', '長髪', '銀髪', '水着', 'ウェディング'],
+    'ラフィーII': ['ふんわり', '兎耳', 'メカ寄り', 'ツインテール', '銀髪'],
+    'グアム': ['元気', 'メカ寄り', '長髪', '金髪'],
+    'ソビエツキー・ソユーズ': ['クール', '凛々しい', '騎士風', '長髪', '銀髪', 'ドレス'],
+    'モガドール': ['妖しい', 'ゴシック', '長髪', '紫髪', '水着'],
+    'アルザス': ['元気', 'ミステリアス', '翼', '天使系', '騎士風', '長髪', '銀髪'],
+    'ナポリ': ['ふんわり', '翼', '天使系', '長髪', '金髪', 'バニー'],
+    'アドミラル・ナヒーモフ': ['クール', '猫耳', 'メカ寄り', '長髪', '銀髪'],
+    '天城(空母)': ['お姉さん系', '清楚', '狐耳', '和風', '長髪', '黒髪', 'ウェディング'],
+    'Z52': ['元気', 'メカ寄り', 'ポニーテール', '黒髪'],
+    'フリッツ・ルメイ': ['クール', '凛々しい', '騎士風', '短髪', '銀髪'],
+    'ラファエロ': ['元気', '翼', '天使系', '長髪', '黒髪'],
+    'トラファルガー': ['クール', '凛々しい', '騎士風', '長髪', '青髪'],
+    'ライオン': ['凛々しい', '騎士風', '短髪', '金髪'],
+    'メークレンブルク': ['勝ち気', '角', '悪魔系', 'ゴシック', '長髪', 'ピンク髪'],
+    'ハウデン・リーウ': ['お姉さん系', '清楚', '翼', '長髪', '金髪'],
+    '伊404': ['角', '和風', '長髪', '銀髪', 'ウェディング'],
+    '白鳳': ['妖しい', 'お姉さん系', '和風', '長髪', '銀髪'],
+    'ウィリアム・D・ポーター': ['元気', 'ポニーテール', '金髪', 'メイド'],
+    'レキシントンII': ['お姉さん系', '清楚', '長髪', 'ピンク髪', 'メイド'],
+    'モスクワ': ['凛々しい', '騎士風', '長髪', '青髪'],
+    'U-2501': ['角', '悪魔系', '長髪', '紫髪'],
+    'ゲッツ・フォン・ベルリヒンゲン': ['悪魔系', 'ゴシック', '長髪', '黒髪'],
+    'マックス・インメルマン': ['角', 'メカ寄り', '短髪', 'ピンク髪'],
+    'バルパライソ': ['長髪', '銀髪'],
+    'タイガー': ['ふんわり', 'お姉さん系', 'ゴシック', '長髪', '銀髪'],
+    '安土': ['角', '和風', 'メカ寄り', '長髪', '黒髪'],
+}
+
 def fetch_cached(url, sleep_sec=0.25):
     key = hashlib.sha256(url.encode('utf-8')).hexdigest()[:20]
     cache_path = os.path.join(CACHE_DIR, f'{key}.html')
@@ -245,6 +298,8 @@ def parse_ship_page(jp_name, page_url, rarity_raw, type_hint, impl_date, acq_hin
             })
 
     # 1. Profile default image (first pass: strict, second pass: allow 696D67_ / static webp fallback)
+    if jp_name == '安土':
+        add_img('通常', AZUCHI_FULL_IMG)
     for allow_fb in (False, True):
         if images:
             break
@@ -313,6 +368,21 @@ def parse_ship_page(jp_name, page_url, rarity_raw, type_hint, impl_date, acq_hin
     if rarity_raw == 'DR' and '開発ドック' not in acquisition:
         acquisition = f'開発ドック（{acq_hint}）' if acq_hint and acq_hint != '開発ドック' else '開発ドック（科学研究）'
 
+    # Check Live2D mention in skin section (excluding scripts) or image labels
+    for sc in soup.find_all('script'):
+        sc.decompose()
+    has_live2d = any('live2d' in img['label'].lower() for img in images)
+    if not has_live2d:
+        cur_h2 = ''
+        for el in body.children:
+            if getattr(el, 'name', None) == 'h2':
+                cur_h2 = el.get_text(' ', strip=True)
+            elif '着せ替え' in cur_h2 and hasattr(el, 'get_text'):
+                t = el.get_text(' ', strip=True).lower()
+                if 'live2d' in t or 'l2d' in t:
+                    has_live2d = True
+                    break
+
     return {
         'jp_name': jp_name,
         'nameEn': name_en,
@@ -329,6 +399,7 @@ def parse_ship_page(jp_name, page_url, rarity_raw, type_hint, impl_date, acq_hin
         'implDate': impl_date,
         'sourceUrl': page_url,
         'images': images,
+        'hasLive2d': has_live2d,
     }
 
 
@@ -393,11 +464,20 @@ def main():
         }
         if parsed['plan']:
             rec['plan'] = parsed['plan']
+        tags = list(SHIP_TAGS_BASE.get(parsed['jp_name'], []))
+        if parsed['faction'] == 'その他・コラボ' and 'コラボ艦' not in tags:
+            tags.append('コラボ艦')
+        if len(parsed['images']) >= 6 and '着せ替え多数' not in tags:
+            tags.append('着せ替え多数')
+        if parsed['hasLive2d'] and 'Live2D着せ替えあり' not in tags:
+            tags.append('Live2D着せ替えあり')
+
         rec.update({
             'type': parsed['type'],
             'faction': parsed['faction'],
             'cv': parsed['cv'],
             'illustrator': parsed['illustrator'],
+            'tags': tags,
             'skills': parsed['skills'],
             'acquisition': parsed['acquisition'],
             'sourceInfo': {
