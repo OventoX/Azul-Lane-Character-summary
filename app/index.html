@@ -113,8 +113,16 @@
   <!-- 画像拡大ライトボックス -->
   <div id="lightbox" class="lightbox hidden" role="dialog" aria-modal="true" aria-label="画像拡大表示">
     <button type="button" class="lightbox-close" id="lightboxCloseBtn" aria-label="拡大を閉じる">&times;</button>
-    <img id="lightboxImg" src="" alt="">
-    <p id="lightboxCaption" class="lightbox-caption"></p>
+    <div id="lightboxStage" class="lightbox-stage">
+      <button type="button" class="lightbox-img-nav lightbox-img-prev" id="lightboxPrevImgBtn" aria-label="前の画像">&#8249;</button>
+      <img id="lightboxImg" src="" alt="" draggable="false">
+      <button type="button" class="lightbox-img-nav lightbox-img-next" id="lightboxNextImgBtn" aria-label="次の画像">&#8250;</button>
+    </div>
+    <div class="lightbox-footer">
+      <button type="button" class="lightbox-char-nav" id="lightboxPrevCharBtn" aria-label="前の艦船">&laquo; 前の艦</button>
+      <p id="lightboxCaption" class="lightbox-caption"></p>
+      <button type="button" class="lightbox-char-nav" id="lightboxNextCharBtn" aria-label="次の艦船">次の艦 &raquo;</button>
+    </div>
   </div>
 
   <script src="data.js"></script>

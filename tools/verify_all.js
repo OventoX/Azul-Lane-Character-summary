@@ -21,10 +21,12 @@ if (!Array.isArray(ships)) {
 
 const VALID_RARITIES = new Set(['UR', 'SSR', 'SR', 'R', 'N']);
 const VALID_PLANS = new Set(['PR', 'DR']);
+const EQUIP_LABEL_RE = /\(T[0-3]\)|^e\d+_\d+|^\d{3}-\d+/i;
 const seenIds = new Set();
 const errors = [];
 const warnings = [];
 
+let totalImages = 0;
 const rarityCounts = {};
 const planCounts = { UR_NORMAL: 0, DR: 0, PR: 0 };
 const factionCounts = {};
@@ -67,9 +69,12 @@ ships.forEach((s, idx) => {
   if (!Array.isArray(s.images) || s.images.length === 0) {
     errors.push(`${prefix} Missing images`);
   } else {
+    totalImages += s.images.length;
     s.images.forEach((img, iIdx) => {
       if (!img.label || !img.url || !img.source || !img.credit) {
         errors.push(`${prefix} Image[${iIdx}] missing required metadata (label/url/source/credit)`);
+      } else if (EQUIP_LABEL_RE.test(img.label.trim())) {
+        errors.push(`${prefix} Image[${iIdx}] looks like equipment/code label: "${img.label}"`);
       }
     });
   }
@@ -94,6 +99,7 @@ ships.forEach((s, idx) => {
 
 console.log('=== verify_all.js Report ===');
 console.log(`Total ships: ${ships.length}`);
+console.log(`Total images: ${totalImages}`);
 console.log('By rarity:', rarityCounts);
 console.log('UR breakdown:', { '通常UR': planCounts.UR_NORMAL, '計画艦DR': planCounts.DR });
 console.log('By faction:', factionCounts);

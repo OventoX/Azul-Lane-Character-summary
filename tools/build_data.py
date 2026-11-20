@@ -123,19 +123,37 @@ def parse_name_en(raw_name, jp_name):
     return s
 
 
-def is_valid_chara_img(src, alt):
+def is_valid_chara_img(src, alt, allow_profile_fallback=False):
     if not src or 'attach2/' not in src:
         return False
     low = src.lower()
-    if not (low.endswith('.jpg') or low.endswith('.jpeg') or low.endswith('.png')):
+    allowed_exts = ('.jpg', '.jpeg', '.png', '.webp') if allow_profile_fallback else ('.jpg', '.jpeg', '.png')
+    if not low.endswith(allowed_exts):
         return False
-    # Exclude skill icons (prefix 696D67_ is "img_"), SDs, banners
     fname = src.split('/')[-1]
-    if fname.startswith('696D67_'):
+    # Exclude skill icons, SDs, banners, equipment icons
+    if fname.startswith('696D67_') and not allow_profile_fallback:
         return False
-    if '_SD' in alt or '_sd' in alt.lower() or 'icon' in alt.lower():
+    base_alt = re.sub(r'\.(jpg|jpeg|png|webp)$', '', alt.strip(), flags=re.IGNORECASE)
+    if '_SD' in alt or '_sd' in alt.lower() or base_alt.endswith('SD') or 'icon' in alt.lower():
+        return False
+    # Exclude animated Live2D preview webp unless specifically fallback
+    if low.endswith('.webp') and ('fps' in alt.lower() or 'live2d' in alt.lower()):
+        return False
+    # Exclude equipment / code-name patterns
+    if re.search(r'\(T[0-3]\)|^e\d+_\d+|^\d{3}-\d+', alt.strip(), re.IGNORECASE):
         return False
     return True
+
+
+def clean_skin_label(raw_label, jp_name, has_default):
+    label = re.sub(r'\.(jpg|jpeg|png)$', '', raw_label, flags=re.IGNORECASE).strip()
+    if not label or label == jp_name or label == f'{jp_name}_2':
+        return '通常' if not has_default else '別立ち絵'
+    # Fix unmatched trailing ')' if '(' is not present (rare wiki typo)
+    if ')' in label and '(' not in label and '（' not in label:
+        label = label.replace(')', '')
+    return label
 
 
 def parse_ship_page(jp_name, page_url, rarity_raw, type_hint, impl_date, acq_hint):
@@ -226,49 +244,56 @@ def parse_ship_page(jp_name, page_url, rarity_raw, type_hint, impl_date, acq_hin
                 'credit': '© Manjuu / Yongshi / Yostar（出典: azurlane.wikiru.jp）'
             })
 
-    # 1. Profile default image
-    for table in body.find_all('table'):
-        rows = table.find_all('tr')
-        if rows and rows[0].get_text(' ', strip=True) == 'プロフィール':
-            for img in table.find_all('img'):
-                src = img.get('data-src') or img.get('src') or ''
-                alt = img.get('alt') or ''
-                if is_valid_chara_img(src, alt):
-                    add_img('通常', src)
-                    break
+    # 1. Profile default image (first pass: strict, second pass: allow 696D67_ / static webp fallback)
+    for allow_fb in (False, True):
+        if images:
             break
+        for table in body.find_all('table'):
+            rows = table.find_all('tr')
+            if rows and rows[0].get_text(' ', strip=True) == 'プロフィール':
+                for img in table.find_all('img'):
+                    src = img.get('data-src') or img.get('src') or ''
+                    alt = img.get('alt') or ''
+                    if is_valid_chara_img(src, alt, allow_profile_fallback=allow_fb):
+                        add_img('通常', src)
+                        break
+                break
 
-    # 2. Oath & Skins: look for h2/h3 headings or images inside AttireList / Oath
-    # First check Oath heading
+    # 2. Oath & Skins: ONLY scan sections before ゲームにおいて / 元ネタ / コメント
+    # Specifically: Oath headings (h2/h3) and the 着せ替え h2 section
     for h in body.find_all(['h2', 'h3']):
         htext = h.get_text(' ', strip=True)
         m_oath = re.search(r'ケッコン後\(([^)]+)\)', htext)
         if m_oath:
             oath_name = m_oath.group(1).strip()
-            # Check preceding or following images near this heading
             for sib in [h.find_previous_sibling(), h.find_next_sibling()]:
-                if sib:
+                if sib and hasattr(sib, 'find_all'):
                     for img in sib.find_all('img'):
                         src = img.get('data-src') or img.get('src') or ''
                         alt = img.get('alt') or ''
                         if is_valid_chara_img(src, alt):
                             add_img(f'ケッコン：{oath_name}', src)
 
-    # Check all valid chara images in body that haven't been added yet (skins etc.)
-    # Usually skin images are in the Attire section or before skin voice headings
-    for img in body.find_all('img'):
-        src = img.get('data-src') or img.get('src') or ''
-        alt = img.get('alt') or ''
-        if not is_valid_chara_img(src, alt):
+    # 3. Scan <h2>着せ替え</h2> section (between <h2>着せ替え</h2> and next <h2>)
+    # Also scan <h2>基本情報</h2> section for any fallback default portrait (if not found in profile table)
+    current_h2 = ''
+    for el in body.children:
+        if getattr(el, 'name', None) == 'h2':
+            current_h2 = el.get_text(' ', strip=True)
             continue
-        full_url = normalize_url(src)
-        if full_url in seen_urls:
+        if not hasattr(el, 'find_all'):
             continue
-        # Derive label from alt/title
-        label = re.sub(r'\.(jpg|jpeg|png)$', '', alt, flags=re.IGNORECASE).strip()
-        if not label or label == jp_name or label == f'{jp_name}_2':
-            label = '通常' if not images else '別イラスト'
-        add_img(label, src)
+        if '着せ替え' in current_h2 or (not images and '基本情報' in current_h2):
+            for img in el.find_all('img'):
+                src = img.get('data-src') or img.get('src') or ''
+                alt = img.get('alt') or ''
+                if not is_valid_chara_img(src, alt):
+                    continue
+                full_url = normalize_url(src)
+                if full_url in seen_urls:
+                    continue
+                label = clean_skin_label(alt, jp_name, bool(images))
+                add_img(label, src)
 
     raw_name = profile.get('名前', jp_name)
     name_en = parse_name_en(raw_name, jp_name)
