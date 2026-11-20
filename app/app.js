@@ -15,6 +15,8 @@
   let onlyFav = false;
   let currentModalShip = null;
   let currentImgIndex = 0;
+  const PAGE_SIZE = 120;
+  let displayLimit = PAGE_SIZE;
   const selectedTags = new Set();
 
   const TAG_GROUPS = [
@@ -56,6 +58,8 @@
     tagFilterPanel: document.getElementById('tagFilterPanel'),
     resultCountText: document.getElementById('resultCountText'),
     shipGrid: document.getElementById('shipGrid'),
+    loadMoreWrap: document.getElementById('loadMoreWrap'),
+    loadMoreBtn: document.getElementById('loadMoreBtn'),
     emptyState: document.getElementById('emptyState'),
     detailModal: document.getElementById('detailModal'),
     modalBackdrop: document.getElementById('modalBackdrop'),
@@ -179,9 +183,17 @@
   }
 
   function getRarityRank(ship) {
-    if (ship.plan === 'DR') return 5;
-    const map = { UR: 4, SSR: 3, SR: 2, R: 1, N: 0 };
+    if (ship.plan === 'DR') return 6;
+    if (ship.rarity === 'UR') return 5;
+    if (ship.plan === 'PR') return 4;
+    const map = { SSR: 3, SR: 2, R: 1, N: 0 };
     return map[ship.rarity] ?? -1;
+  }
+
+  function getBadgeClass(ship) {
+    if (ship.plan === 'DR') return 'rarity-dr';
+    if (ship.plan === 'PR') return 'rarity-pr';
+    return `rarity-${(ship.rarity || 'n').toLowerCase()}`;
   }
 
   function getDisplayRarity(ship) {
@@ -200,6 +212,10 @@
       if (rarity === 'DR' && s.plan !== 'DR') return false;
       if (rarity === 'UR_ONLY' && (s.rarity !== 'UR' || s.plan === 'DR')) return false;
       if (rarity === 'UR' && s.rarity !== 'UR') return false;
+      if (rarity === 'PR' && s.plan !== 'PR') return false;
+      if (rarity === 'SSR_ONLY' && (s.rarity !== 'SSR' || s.plan === 'PR')) return false;
+      if (rarity === 'SSR' && s.rarity !== 'SSR') return false;
+      if ((rarity === 'SR' || rarity === 'R' || rarity === 'N') && s.rarity !== rarity) return false;
       if (type !== 'ALL' && s.type !== type) return false;
       if (faction !== 'ALL' && s.faction !== faction) return false;
       if (selectedTags.size > 0) {
@@ -230,22 +246,31 @@
     return list;
   }
 
-  function renderGrid() {
+  function renderGrid(resetLimit = false) {
+    if (resetLimit) displayLimit = PAGE_SIZE;
     const list = getFilteredShips();
     els.resultCountText.textContent = `${list.length} / ${ships.length} 隻を表示中`;
 
     if (list.length === 0) {
       els.shipGrid.innerHTML = '';
+      els.loadMoreWrap.classList.add('hidden');
       els.emptyState.classList.remove('hidden');
       return;
     }
 
     els.emptyState.classList.add('hidden');
-    els.shipGrid.innerHTML = list.map(s => {
+    const visible = list.slice(0, displayLimit);
+    const remaining = list.length - visible.length;
+    els.loadMoreWrap.classList.toggle('hidden', remaining <= 0);
+    if (remaining > 0) {
+      els.loadMoreBtn.textContent = `もっと表示（残り ${remaining} 隻）`;
+    }
+
+    els.shipGrid.innerHTML = visible.map(s => {
       const thumb = (s.images && s.images[0]) ? s.images[0].url : '';
       const isFav = favorites.has(s.id);
-      const badgeClass = s.plan === 'DR' ? 'rarity-dr' : 'rarity-ur';
-      const badgeLabel = s.plan === 'DR' ? 'DR' : s.rarity;
+      const badgeClass = getBadgeClass(s);
+      const badgeLabel = s.plan ? s.plan : s.rarity;
 
       return `
         <article class="ship-card" data-id="${escapeHtml(s.id)}" tabindex="0">
@@ -291,7 +316,7 @@
     const imgs = s.images && s.images.length ? s.images : [];
     const activeImg = imgs[currentImgIndex] || null;
     const isFav = favorites.has(s.id);
-    const badgeClass = s.plan === 'DR' ? 'rarity-dr' : 'rarity-ur';
+    const badgeClass = getBadgeClass(s);
 
     const skillsHtml = (s.skills && s.skills.length)
       ? s.skills.map(sk => `
@@ -493,17 +518,22 @@
   }
 
   // Event listeners
-  els.searchInput.addEventListener('input', renderGrid);
-  els.rarityFilter.addEventListener('change', renderGrid);
-  els.typeFilter.addEventListener('change', renderGrid);
-  els.factionFilter.addEventListener('change', renderGrid);
-  els.sortSelect.addEventListener('change', renderGrid);
+  els.searchInput.addEventListener('input', () => renderGrid(true));
+  els.rarityFilter.addEventListener('change', () => renderGrid(true));
+  els.typeFilter.addEventListener('change', () => renderGrid(true));
+  els.factionFilter.addEventListener('change', () => renderGrid(true));
+  els.sortSelect.addEventListener('change', () => renderGrid(true));
+
+  els.loadMoreBtn.addEventListener('click', () => {
+    displayLimit += PAGE_SIZE;
+    renderGrid(false);
+  });
 
   els.favFilterBtn.addEventListener('click', () => {
     onlyFav = !onlyFav;
     els.favFilterBtn.classList.toggle('active', onlyFav);
     els.favFilterBtn.setAttribute('aria-pressed', String(onlyFav));
-    renderGrid();
+    renderGrid(true);
   });
 
   els.tagToggleBtn.addEventListener('click', () => {
@@ -519,13 +549,13 @@
     if (selectedTags.has(tag)) selectedTags.delete(tag);
     else selectedTags.add(tag);
     renderTagFilterPanel();
-    renderGrid();
+    renderGrid(true);
   });
 
   els.clearTagsBtn.addEventListener('click', () => {
     selectedTags.clear();
     renderTagFilterPanel();
-    renderGrid();
+    renderGrid(true);
   });
 
   els.resetBtn.addEventListener('click', () => {
@@ -539,7 +569,7 @@
     els.favFilterBtn.setAttribute('aria-pressed', 'false');
     selectedTags.clear();
     renderTagFilterPanel();
-    renderGrid();
+    renderGrid(true);
   });
 
   els.shipGrid.addEventListener('click', e => {

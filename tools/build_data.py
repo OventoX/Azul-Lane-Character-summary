@@ -1,3 +1,4 @@
+import argparse
 import hashlib
 import json
 import os
@@ -5,11 +6,13 @@ import re
 import time
 import urllib.parse
 import urllib.request
+from concurrent.futures import ThreadPoolExecutor, as_completed
 from datetime import datetime
 from bs4 import BeautifulSoup
 
 BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 CACHE_DIR = os.path.join(BASE_DIR, 'tools', 'cache')
+DATA_PATH = os.path.join(BASE_DIR, 'app', 'data.js')
 os.makedirs(CACHE_DIR, exist_ok=True)
 
 TODAY = datetime.now().strftime('%Y-%m-%d')
@@ -31,6 +34,8 @@ FACTION_MAP = {
     '北連': '北方連合',
     'チュリッパ': 'その他・コラボ',
     'ペドレリーア': 'その他・コラボ',
+    'META': 'その他・コラボ',
+    'テンペスタ': 'その他・コラボ',
     '他': 'その他・コラボ',
     'その他': 'その他・コラボ',
 }
@@ -58,92 +63,58 @@ TYPE_MAP = {
     '潜母': '潜水空母',
     '潜水空母': '潜水空母',
     '工作': '工作',
+    '工作艦': '工作',
     '運送': '輸送',
     '輸送': '輸送',
+    '運送艦': '輸送',
     '補給': '補給',
+    '砲艦': '砲艦',
+    '重砲': '砲艦',
+    'モニター': '砲艦',
+    '風帆': '風帆',
+    '風帆S': '風帆',
+    '風帆V': '風帆',
+    '風帆M': '風帆',
 }
 
+VALID_FANDOM_RARITIES = {'Normal', 'Rare', 'Elite', 'Super Rare', 'Priority', 'Decisive', 'Ultra Rare'}
 
-AZUCHI_FULL_IMG = 'https://azurlane.wikiru.jp/attach2/E5AE89E59C9F_417A756368695F66756C6C5F7138352E77656270.webp'
 
-# 出典テキスト（キャラクター解説・着せ替え欄）および通常立ち絵の目視確認に基づくタグ定義
-SHIP_TAGS_BASE = {
-    '吾妻': ['お姉さん系', '清楚', '和風', '長髪', '黒髪', 'ウェディング'],
-    'フリードリヒ・デア・グローセ': ['お姉さん系', '妖しい', '角', '悪魔系', 'ゴシック', '長髪', '黒髪', '水着', 'ウェディング'],
-    'ドレイク': ['勝ち気', '凛々しい', '長髪', '銀髪', '水着'],
-    '特装型ブリMKIII': ['元気', 'メカ寄り', 'ツインテール', 'ピンク髪'],
-    '信濃': ['ふんわり', 'ミステリアス', '狐耳', '和風', '長髪', '銀髪', '水着', 'ウェディング'],
-    'ニュージャージー': ['元気', '勝ち気', '兎耳', 'メカ寄り', '長髪', '青髪', '水着', 'バニー', 'ウェディング'],
-    'エーギル': ['お姉さん系', '凛々しい', '角', '悪魔系', 'ゴシック', '長髪', '銀髪', 'メイド', 'チャイナ', 'ウェディング'],
-    '白龍': ['勝ち気', '角', '和風', '長髪', '銀髪', 'ウェディング'],
-    '島風': ['元気', '兎耳', '和風', '長髪', '黒髪', '水着', 'バニー'],
-    'ウルリッヒ・フォン・フッテン': ['クール', 'お姉さん系', 'ゴシック', 'メカ寄り', '短髪', '黒髪', 'メイド', 'ウェディング'],
-    'クロンシュタット': ['クール', '凛々しい', '騎士風', '長髪', '銀髪'],
-    'ヴァンガード': ['凛々しい', '元気', '騎士風', '長髪', '金髪', 'メイド'],
-    'ブレスト': ['ふんわり', 'ミステリアス', '翼', '天使系', '長髪', '金髪'],
-    'プリマス': ['ふんわり', '清楚', '翼', '天使系', '長髪', '銀髪', '水着'],
-    '武蔵': ['お姉さん系', '凛々しい', '狐耳', '和風', '長髪', '黒髪', 'ウェディング'],
-    'ヨークタウンII': ['お姉さん系', '清楚', 'メカ寄り', '長髪', '銀髪', '水着', 'メイド'],
-    'インプラカブル': ['お姉さん系', '妖しい', '角', '長髪', '金髪', 'メイド', '修道女'],
-    'ビスマルクZwei': ['クール', '凛々しい', '騎士風', 'メカ寄り', '長髪', '金髪', '水着'],
-    'ヒンデンブルク': ['お姉さん系', '妖しい', '角', '悪魔系', '長髪', 'ピンク髪'],
-    'キアサージ': ['クール', 'ミステリアス', '角', 'メカ寄り', '長髪', '銀髪', 'バニー', 'ウェディング'],
-    '雲仙': ['清楚', 'ふんわり', '和風', '長髪', '銀髪', '水着', 'ウェディング'],
-    'ラフィーII': ['ふんわり', '兎耳', 'メカ寄り', 'ツインテール', '銀髪'],
-    'グアム': ['元気', 'メカ寄り', '長髪', '金髪'],
-    'ソビエツキー・ソユーズ': ['クール', '凛々しい', '騎士風', '長髪', '銀髪', 'ドレス'],
-    'モガドール': ['妖しい', 'ゴシック', '長髪', '紫髪', '水着'],
-    'アルザス': ['元気', 'ミステリアス', '翼', '天使系', '騎士風', '長髪', '銀髪'],
-    'ナポリ': ['ふんわり', '翼', '天使系', '長髪', '金髪', 'バニー'],
-    'アドミラル・ナヒーモフ': ['クール', '猫耳', 'メカ寄り', '長髪', '銀髪'],
-    '天城(空母)': ['お姉さん系', '清楚', '狐耳', '和風', '長髪', '黒髪', 'ウェディング'],
-    'Z52': ['元気', 'メカ寄り', 'ポニーテール', '黒髪'],
-    'フリッツ・ルメイ': ['クール', '凛々しい', '騎士風', '短髪', '銀髪'],
-    'ラファエロ': ['元気', '翼', '天使系', '長髪', '黒髪'],
-    'トラファルガー': ['クール', '凛々しい', '騎士風', '長髪', '青髪'],
-    'ライオン': ['凛々しい', '騎士風', '短髪', '金髪'],
-    'メークレンブルク': ['勝ち気', '角', '悪魔系', 'ゴシック', '長髪', 'ピンク髪'],
-    'ハウデン・リーウ': ['お姉さん系', '清楚', '翼', '長髪', '金髪'],
-    '伊404': ['角', '和風', '長髪', '銀髪', 'ウェディング'],
-    '白鳳': ['妖しい', 'お姉さん系', '和風', '長髪', '銀髪'],
-    'ウィリアム・D・ポーター': ['元気', 'ポニーテール', '金髪', 'メイド'],
-    'レキシントンII': ['お姉さん系', '清楚', '長髪', 'ピンク髪', 'メイド'],
-    'モスクワ': ['凛々しい', '騎士風', '長髪', '青髪'],
-    'U-2501': ['角', '悪魔系', '長髪', '紫髪'],
-    'ゲッツ・フォン・ベルリヒンゲン': ['悪魔系', 'ゴシック', '長髪', '黒髪'],
-    'マックス・インメルマン': ['角', 'メカ寄り', '短髪', 'ピンク髪'],
-    'バルパライソ': ['長髪', '銀髪'],
-    'タイガー': ['ふんわり', 'お姉さん系', 'ゴシック', '長髪', '銀髪'],
-    '安土': ['角', '和風', 'メカ寄り', '長髪', '黒髪'],
-}
-
-def fetch_cached(url, sleep_sec=0.25):
+def fetch_cached(url, sleep_sec=0.12, retries=2):
     key = hashlib.sha256(url.encode('utf-8')).hexdigest()[:20]
     cache_path = os.path.join(CACHE_DIR, f'{key}.html')
     if os.path.exists(cache_path):
         with open(cache_path, 'r', encoding='utf-8') as f:
             return f.read()
-    req = urllib.request.Request(url, headers={
-        'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36'
-    })
-    with urllib.request.urlopen(req, timeout=25) as r:
-        content = r.read().decode('utf-8', 'ignore')
-    with open(cache_path, 'w', encoding='utf-8') as f:
-        f.write(content)
-    time.sleep(sleep_sec)
-    return content
+    last_err = None
+    for attempt in range(retries + 1):
+        try:
+            req = urllib.request.Request(url, headers={
+                'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36'
+            })
+            with urllib.request.urlopen(req, timeout=25) as r:
+                content = r.read().decode('utf-8', 'ignore')
+            with open(cache_path, 'w', encoding='utf-8') as f:
+                f.write(content)
+            if sleep_sec > 0:
+                time.sleep(sleep_sec)
+            return content
+        except Exception as e:
+            last_err = e
+            time.sleep(0.5 * (attempt + 1))
+    raise last_err
 
 
 def get_fandom_map():
     url = 'https://blhx.fandom.com/api.php?action=parse&page=Full_Ship_List&prop=text&format=json'
-    raw = fetch_cached(url, sleep_sec=0.1)
+    raw = fetch_cached(url, sleep_sec=0.05)
     data = json.loads(raw)
     html = data['parse']['text']['*']
     soup = BeautifulSoup(html, 'html.parser')
     fmap = {}
     for tr in soup.find_all('tr'):
         tds = [td.get_text(' ', strip=True) for td in tr.find_all(['td', 'th'])]
-        if len(tds) >= 7 and tds[6] in ('Ultra Rare', 'Decisive'):
+        if len(tds) >= 7 and tds[1] and tds[3] and tds[6] in VALID_FANDOM_RARITIES:
             no = tds[1].strip()
             name_en = tds[3].strip()
             ship_class = tds[4].strip()
@@ -151,7 +122,6 @@ def get_fandom_map():
                 'no': no,
                 'nameEn': name_en,
                 'classEn': ship_class,
-                'url': f'https://blhx.fandom.com/wiki/{urllib.parse.quote(name_en.replace(" ", "_"))}'
             }
     return fmap
 
@@ -167,12 +137,10 @@ def normalize_url(href):
 
 
 def parse_name_en(raw_name, jp_name):
-    # e.g. "武蔵 IJN Musashi" or "ニュージャージー USS New Jersey"
     s = raw_name.strip()
     if s.startswith(jp_name):
         s = s[len(jp_name):].strip()
-    # Remove leading faction prefix if present
-    s = re.sub(r'^(USS|HMS|IJN|KMS|SN|ROC|RN|FFNF|MNF|UNIV|MOT|HNLMS)\s+', '', s).strip()
+    s = re.sub(r'^(USS|HMS|IJN|KMS|SN|ROC|RN|FFNF|MNF|UNIV|MOT|HNLMS|META)\s+', '', s).strip()
     return s
 
 
@@ -184,35 +152,130 @@ def is_valid_chara_img(src, alt, allow_profile_fallback=False):
     if not low.endswith(allowed_exts):
         return False
     fname = src.split('/')[-1]
-    # Exclude skill icons, SDs, banners, equipment icons
     if fname.startswith('696D67_') and not allow_profile_fallback:
         return False
     base_alt = re.sub(r'\.(jpg|jpeg|png|webp)$', '', alt.strip(), flags=re.IGNORECASE)
     if '_SD' in alt or '_sd' in alt.lower() or base_alt.endswith('SD') or 'icon' in alt.lower():
         return False
-    # Exclude animated Live2D preview webp unless specifically fallback
     if low.endswith('.webp') and ('fps' in alt.lower() or 'live2d' in alt.lower()):
         return False
-    # Exclude equipment / code-name patterns
     if re.search(r'\(T[0-3]\)|^e\d+_\d+|^\d{3}-\d+', alt.strip(), re.IGNORECASE):
         return False
     return True
 
 
 def clean_skin_label(raw_label, jp_name, has_default):
-    label = re.sub(r'\.(jpg|jpeg|png)$', '', raw_label, flags=re.IGNORECASE).strip()
+    label = re.sub(r'\.(jpg|jpeg|png|webp)$', '', raw_label, flags=re.IGNORECASE).strip()
     if not label or label == jp_name or label == f'{jp_name}_2':
         return '通常' if not has_default else '別立ち絵'
-    # Fix unmatched trailing ')' if '(' is not present (rare wiki typo)
     if ')' in label and '(' not in label and '（' not in label:
         label = label.replace(')', '')
     return label
 
 
-def parse_ship_page(jp_name, page_url, rarity_raw, type_hint, impl_date, acq_hint):
+def extract_auto_tags(jp_name, faction, images, skin_text, chara_text, has_oath, has_live2d):
+    tags = []
+    def add(t):
+        if t not in tags:
+            tags.append(t)
+
+    # 1. Mechanical tags
+    if faction == 'その他・コラボ':
+        add('コラボ艦')
+    if len(images) >= 6:
+        add('着せ替え多数')
+    if has_live2d:
+        add('Live2D着せ替えあり')
+
+    # 2. Skin type tags from image labels and skin section text
+    lbls = ' '.join(i['label'] for i in images)
+    skin_all = f'{lbls} {skin_text}'
+    if re.search(r'水着|ビキニ|競泳|海水浴|ビーチ', skin_all):
+        add('水着')
+    if re.search(r'メイド', skin_all):
+        add('メイド')
+    if re.search(r'バニー', skin_all):
+        add('バニー')
+    if re.search(r'ドレス|パーティー|イブニング|舞踏会', skin_all):
+        add('ドレス')
+    if re.search(r'チャイナ|春節|旗袍', skin_all):
+        add('チャイナ')
+    if re.search(r'パジャマ|寝間着|ナイトウェア', skin_all):
+        add('パジャマ')
+    if re.search(r'制服|学園|スクール|セーラー服', skin_all):
+        add('制服')
+    if re.search(r'修道女|シスター', skin_all):
+        add('修道女')
+    if re.search(r'巫女', skin_all):
+        add('巫女')
+    if has_oath or re.search(r'ウェディング|花嫁|白無垢|ケッコン衣装', skin_all):
+        add('ウェディング')
+
+    # 3. Character description text (strictly evidence-based)
+    if chara_text:
+        for kw, tag in [
+            ('クール', 'クール'),
+            ('元気', '元気'),
+            ('甘え', '甘えんぼ'),
+            ('お姉さん', 'お姉さん系'),
+            ('姉御', 'お姉さん系'),
+            ('凛々し', '凛々しい'),
+            ('ふんわり', 'ふんわり'),
+            ('勝ち気', '勝ち気'),
+            ('ミステリアス', 'ミステリアス'),
+            ('妖し', '妖しい'),
+            ('妖艶', '妖しい'),
+            ('清楚', '清楚'),
+            ('狐耳', '狐耳'),
+            ('キツネ耳', '狐耳'),
+            ('猫耳', '猫耳'),
+            ('ネコ耳', '猫耳'),
+            ('兎耳', '兎耳'),
+            ('ウサ耳', '兎耳'),
+            ('うさ耳', '兎耳'),
+            ('和風', '和風'),
+            ('中華風', '中華風'),
+            ('ゴシック', 'ゴシック'),
+            ('騎士', '騎士風'),
+            ('長髪', '長髪'),
+            ('ロングヘア', '長髪'),
+            ('短髪', '短髪'),
+            ('ショートヘア', '短髪'),
+            ('ツインテール', 'ツインテール'),
+            ('ポニーテール', 'ポニーテール'),
+            ('銀髪', '銀髪'),
+            ('黒髪', '黒髪'),
+            ('金髪', '金髪'),
+            ('ピンク髪', 'ピンク髪'),
+            ('紫髪', '紫髪'),
+            ('青髪', '青髪'),
+        ]:
+            if kw in chara_text:
+                add(tag)
+
+    return tags
+
+
+def parse_ship_page(jp_name, page_url, rarity_raw, type_hint, acq_hint, _depth=0):
     html = fetch_cached(page_url)
     soup = BeautifulSoup(html, 'html.parser')
+    for sc in soup.find_all('script'):
+        sc.decompose()
     body = soup.find('div', id='body') or soup
+
+    # Check if this is a redirect/disambiguation notice (e.g. 天城 -> 天城(巡戦))
+    if _depth == 0:
+        has_profile = any(
+            (t.find('tr') and t.find('tr').get_text(' ', strip=True) == 'プロフィール')
+            for t in body.find_all('table')
+        )
+        if not has_profile:
+            body_txt = body.get_text(' ', strip=True)
+            if '変更' in body_txt or '曖昧さ' in body_txt or len(body_txt) < 400:
+                for a in body.find_all('a', href=True):
+                    atext = a.get_text(' ', strip=True)
+                    if jp_name in atext and ('(' in atext or '（' in atext) and '空母' not in atext:
+                        return parse_ship_page(jp_name, normalize_url(a['href']), rarity_raw, type_hint, acq_hint, _depth=1)
 
     profile = {}
     ship_class = ''
@@ -225,12 +288,10 @@ def parse_ship_page(jp_name, page_url, rarity_raw, type_hint, impl_date, acq_hin
             continue
         first_txt = rows[0].get_text(' ', strip=True)
 
-        # Profile table
         if first_txt == 'プロフィール':
             for tr in rows[1:]:
                 cells = tr.find_all(['th', 'td'])
                 if len(cells) >= 2:
-                    # Sometimes first cell is image (rowspan)
                     texts = [c.get_text(' ', strip=True) for c in cells]
                     for idx in range(len(texts) - 1):
                         k = texts[idx]
@@ -238,7 +299,6 @@ def parse_ship_page(jp_name, page_url, rarity_raw, type_hint, impl_date, acq_hin
                         if k in ('名前', 'レアリティ', '艦種', '陣営', 'CV', 'イラスト'):
                             profile[k] = v
 
-        # Acquisition table
         elif first_txt == '入手方法':
             for tr in rows[1:]:
                 cells = [c.get_text(' ', strip=True) for c in tr.find_all(['th', 'td'])]
@@ -247,7 +307,6 @@ def parse_ship_page(jp_name, page_url, rarity_raw, type_hint, impl_date, acq_hin
                 elif cells:
                     acquisition_parts.append(cells[0])
 
-        # Fleet tech table -> 艦級
         elif first_txt == '艦船技術':
             for tr in rows[1:]:
                 cells = [c.get_text(' ', strip=True) for c in tr.find_all(['th', 'td'])]
@@ -255,7 +314,6 @@ def parse_ship_page(jp_name, page_url, rarity_raw, type_hint, impl_date, acq_hin
                     cls = re.sub(r'^T\d+\s*', '', cells[1]).strip()
                     ship_class = cls
 
-        # Skill table (pattern A: ['', 'スキル名', '効果'], pattern B: ['スキル'] or ['', 'スキル'] with 2 rows per skill)
         elif any(h in first_txt for h in ('スキル名', '効果')) and '全弾発射' not in first_txt:
             for tr in rows[1:]:
                 cells = tr.find_all(['th', 'td'])
@@ -282,7 +340,6 @@ def parse_ship_page(jp_name, page_url, rarity_raw, type_hint, impl_date, acq_hin
                         skills.append({'name': sname, 'desc': sdesc})
                 idx += 1
 
-    # Images extraction
     images = []
     seen_urls = set()
 
@@ -297,9 +354,7 @@ def parse_ship_page(jp_name, page_url, rarity_raw, type_hint, impl_date, acq_hin
                 'credit': '© Manjuu / Yongshi / Yostar（出典: azurlane.wikiru.jp）'
             })
 
-    # 1. Profile default image (first pass: strict, second pass: allow 696D67_ / static webp fallback)
-    if jp_name == '安土':
-        add_img('通常', AZUCHI_FULL_IMG)
+    # 1. Profile default image
     for allow_fb in (False, True):
         if images:
             break
@@ -314,12 +369,13 @@ def parse_ship_page(jp_name, page_url, rarity_raw, type_hint, impl_date, acq_hin
                         break
                 break
 
-    # 2. Oath & Skins: ONLY scan sections before ゲームにおいて / 元ネタ / コメント
-    # Specifically: Oath headings (h2/h3) and the 着せ替え h2 section
+    # 2. Oath headings
+    has_oath = False
     for h in body.find_all(['h2', 'h3']):
         htext = h.get_text(' ', strip=True)
         m_oath = re.search(r'ケッコン後\(([^)]+)\)', htext)
         if m_oath:
+            has_oath = True
             oath_name = m_oath.group(1).strip()
             for sib in [h.find_previous_sibling(), h.find_next_sibling()]:
                 if sib and hasattr(sib, 'find_all'):
@@ -329,15 +385,21 @@ def parse_ship_page(jp_name, page_url, rarity_raw, type_hint, impl_date, acq_hin
                         if is_valid_chara_img(src, alt):
                             add_img(f'ケッコン：{oath_name}', src)
 
-    # 3. Scan <h2>着せ替え</h2> section (between <h2>着せ替え</h2> and next <h2>)
-    # Also scan <h2>基本情報</h2> section for any fallback default portrait (if not found in profile table)
+    # 3. Skin section & character description
+    skin_texts = []
+    chara_texts = []
     current_h2 = ''
+    in_chara = False
     for el in body.children:
-        if getattr(el, 'name', None) == 'h2':
+        tag = getattr(el, 'name', None)
+        if tag == 'h2':
             current_h2 = el.get_text(' ', strip=True)
+            in_chara = False
             continue
         if not hasattr(el, 'find_all'):
             continue
+        if '着せ替え' in current_h2:
+            skin_texts.append(el.get_text(' ', strip=True))
         if '着せ替え' in current_h2 or (not images and '基本情報' in current_h2):
             for img in el.find_all('img'):
                 src = img.get('data-src') or img.get('src') or ''
@@ -350,6 +412,25 @@ def parse_ship_page(jp_name, page_url, rarity_raw, type_hint, impl_date, acq_hin
                 label = clean_skin_label(alt, jp_name, bool(images))
                 add_img(label, src)
 
+    for el in body.descendants:
+        if getattr(el, 'name', None) in ('h2', 'h3'):
+            ht = el.get_text(' ', strip=True)
+            if 'キャラクター' in ht:
+                in_chara = True
+                continue
+            elif in_chara:
+                break
+        if in_chara and getattr(el, 'name', None) in ('p', 'li'):
+            t = el.get_text(' ', strip=True)
+            if t:
+                chara_texts.append(t)
+
+    skin_joined = ' '.join(skin_texts)
+    chara_joined = ' '.join(chara_texts)
+    has_live2d = any('live2d' in img['label'].lower() for img in images) or (
+        'live2d' in skin_joined.lower() or 'l2d' in skin_joined.lower()
+    )
+
     raw_name = profile.get('名前', jp_name)
     name_en = parse_name_en(raw_name, jp_name)
     raw_faction = profile.get('陣営', '')
@@ -357,31 +438,21 @@ def parse_ship_page(jp_name, page_url, rarity_raw, type_hint, impl_date, acq_hin
     raw_type = profile.get('艦種', type_hint)
     ship_type = TYPE_MAP.get(raw_type, raw_type)
 
+    plan = None
     if rarity_raw == 'DR':
         rarity = 'UR'
         plan = 'DR'
+    elif rarity_raw == 'PR':
+        rarity = 'SSR'
+        plan = 'PR'
     else:
-        rarity = 'UR'
-        plan = None
+        rarity = rarity_raw if rarity_raw in ('UR', 'SSR', 'SR', 'R', 'N') else 'SR'
 
     acquisition = ' / '.join(acquisition_parts) if acquisition_parts else acq_hint
-    if rarity_raw == 'DR' and '開発ドック' not in acquisition:
-        acquisition = f'開発ドック（{acq_hint}）' if acq_hint and acq_hint != '開発ドック' else '開発ドック（科学研究）'
+    if rarity_raw in ('DR', 'PR') and '開発ドック' not in acquisition:
+        acquisition = '開発ドック（科学研究）'
 
-    # Check Live2D mention in skin section (excluding scripts) or image labels
-    for sc in soup.find_all('script'):
-        sc.decompose()
-    has_live2d = any('live2d' in img['label'].lower() for img in images)
-    if not has_live2d:
-        cur_h2 = ''
-        for el in body.children:
-            if getattr(el, 'name', None) == 'h2':
-                cur_h2 = el.get_text(' ', strip=True)
-            elif '着せ替え' in cur_h2 and hasattr(el, 'get_text'):
-                t = el.get_text(' ', strip=True).lower()
-                if 'live2d' in t or 'l2d' in t:
-                    has_live2d = True
-                    break
+    tags = extract_auto_tags(jp_name, faction, images, skin_joined, chara_joined, has_oath, has_live2d)
 
     return {
         'jp_name': jp_name,
@@ -391,69 +462,155 @@ def parse_ship_page(jp_name, page_url, rarity_raw, type_hint, impl_date, acq_hin
         'plan': plan,
         'type': ship_type,
         'faction': faction,
-        'factionRaw': raw_faction,
         'cv': profile.get('CV', ''),
         'illustrator': profile.get('イラスト', ''),
+        'tags': tags,
         'skills': skills[:4],
         'acquisition': acquisition,
-        'implDate': impl_date,
         'sourceUrl': page_url,
         'images': images,
-        'hasLive2d': has_live2d,
     }
 
 
-def main():
-    fandom_map = get_fandom_map()
-    print(f'Fandom UR/DR entries: {len(fandom_map)}')
+def load_locked_ships():
+    if not os.path.exists(DATA_PATH):
+        return []
+    with open(DATA_PATH, 'r', encoding='utf-8') as f:
+        raw = f.read()
+    m = re.search(r'const SHIPS_DATA = (\[.*\]);', raw, re.S)
+    if not m:
+        return []
+    ships = json.loads(m.group(1))
+    # Keep existing 47 UR/DR ships untouched
+    locked = [s for s in ships if s.get('rarity') == 'UR' or s.get('plan') == 'DR']
+    return locked
 
+
+def collect_all_targets():
+    targets_by_url = {}
+
+    # 1. 実装履歴
     hist_url = 'https://azurlane.wikiru.jp/?%E6%96%B0%E3%82%AD%E3%83%A3%E3%83%A9%E3%83%BB%E6%94%B9%E9%80%A0%E3%82%AD%E3%83%A3%E3%83%A9%E3%81%AE%E5%AE%9F%E8%A3%85%E5%B1%A5%E6%AD%B4'
-    html = fetch_cached(hist_url)
-    soup = BeautifulSoup(html, 'html.parser')
+    soup = BeautifulSoup(fetch_cached(hist_url), 'html.parser')
     body = soup.find('div', id='body') or soup
-
-    targets = []
+    hist_rows = []
     for tr in body.find_all('tr'):
         tds = tr.find_all('td')
         if len(tds) >= 3:
             texts = [td.get_text(' ', strip=True) for td in tds]
-            if texts[1] in ('UR', 'DR'):
-                ship_name = texts[2]
-                # Exclude SSR->UR retrofits (e.g. ベルファスト改)
-                if ship_name.endswith('改'):
-                    continue
+            rar = texts[1]
+            name = texts[2]
+            if rar in ('UR', 'DR', 'SSR', 'PR', 'SR', 'R', 'N') and not name.endswith('改'):
                 a = tds[2].find('a', href=True)
-                if not a:
-                    continue
-                page_url = normalize_url(a['href'])
-                dates = [t for t in texts[3:-1] if t and t != '-']
-                impl_date = dates[0] if dates else ''
-                acq_hint = texts[-1] if len(texts) > 3 else ''
-                targets.append((ship_name, page_url, texts[1], texts[0], impl_date, acq_hint))
+                if a:
+                    u = normalize_url(a['href'])
+                    acq = texts[-1] if len(texts) > 3 else ''
+                    hist_rows.append((name, u, rar, texts[0], acq))
+    for item in reversed(hist_rows):
+        if item[1] not in targets_by_url:
+            targets_by_url[item[1]] = item
 
-    print(f'Target UR/DR ships (excluding retrofits): {len(targets)}')
+    # 2. キャラクターリスト (catches initial launch ships missing from history)
+    list_url = 'https://azurlane.wikiru.jp/?%E3%82%AD%E3%83%A3%E3%83%A9%E3%82%AF%E3%82%BF%E3%83%BC%E3%83%AA%E3%82%B9%E3%83%88'
+    soup2 = BeautifulSoup(fetch_cached(list_url), 'html.parser')
+    body2 = soup2.find('div', id='body') or soup2
+    for tr in body2.find_all('tr'):
+        tds = tr.find_all('td')
+        if len(tds) >= 5:
+            texts = [td.get_text(' ', strip=True) for td in tds]
+            name = texts[0]
+            rar = texts[2]
+            ship_type = texts[3]
+            acq = texts[4] if len(texts) > 4 else ''
+            if rar in ('UR', 'DR', 'SSR', 'PR', 'SR', 'R', 'N') and not name.endswith('改'):
+                a = tds[0].find('a', href=True)
+                if a:
+                    u = normalize_url(a['href'])
+                    if u not in targets_by_url:
+                        targets_by_url[u] = (name, u, rar, ship_type, acq)
 
-    records = []
-    # Assign deterministic IDs: use Fandom No. when available, otherwise AL-UR-xx / AL-DR-xx
-    # Sort chronologically (oldest first) for clean numbering of newer ships
-    ur_seq = 1
-    dr_seq = 1
-    for jp_name, page_url, rarity_raw, type_hint, impl_date, acq_hint in reversed(targets):
-        parsed = parse_ship_page(jp_name, page_url, rarity_raw, type_hint, impl_date, acq_hint)
-        f_info = fandom_map.get(parsed['nameEn'].lower())
+    return list(targets_by_url.values())
+
+
+def main():
+    parser = argparse.ArgumentParser()
+    parser.add_argument('--rarities', default='ALL', help='Comma-separated rarities to include (e.g. PR,SSR or ALL)')
+    args = parser.parse_args()
+
+    if args.rarities.upper() == 'ALL':
+        target_rarities = {'UR', 'DR', 'PR', 'SSR', 'SR', 'R', 'N'}
+    else:
+        target_rarities = {r.strip().upper() for r in args.rarities.split(',') if r.strip()}
+
+    locked_ships = load_locked_ships()
+    locked_urls = {s['sourceInfo']['url'] for s in locked_ships}
+    used_ids = {s['id'] for s in locked_ships}
+    print(f'Locked existing ships: {len(locked_ships)}')
+
+    fandom_map = get_fandom_map()
+    all_targets = collect_all_targets()
+    print(f'Total unique targets discovered: {len(all_targets)}')
+
+    to_fetch = [
+        t for t in all_targets
+        if t[1] not in locked_urls and t[2] in target_rarities
+    ]
+    print(f'New targets to process for {sorted(target_rarities)}: {len(to_fetch)}')
+
+    parsed_results = {}
+    failed = []
+
+    def worker(item):
+        jp_name, page_url, rar_raw, type_hint, acq_hint = item
+        return page_url, rar_raw, parse_ship_page(jp_name, page_url, rar_raw, type_hint, acq_hint)
+
+    with ThreadPoolExecutor(max_workers=4) as ex:
+        futs = {ex.submit(worker, item): item for item in to_fetch}
+        done_cnt = 0
+        for fut in as_completed(futs):
+            item = futs[fut]
+            done_cnt += 1
+            if done_cnt % 50 == 0:
+                print(f'  Processed {done_cnt}/{len(to_fetch)}...')
+            try:
+                page_url, rar_raw, data = fut.result()
+                parsed_results[page_url] = (rar_raw, data)
+            except Exception as e:
+                failed.append((item[0], item[1], str(e)))
+
+    if failed:
+        print(f'FAILED ({len(failed)}):')
+        for fitem in failed[:20]:
+            print(' ', fitem)
+
+    seq_counters = {'UR': 100, 'DR': 100, 'PR': 1, 'SSR': 1, 'SR': 1, 'R': 1, 'N': 1}
+    new_records = []
+    no_img_ships = []
+
+    for jp_name, page_url, rar_raw, type_hint, acq_hint in to_fetch:
+        if page_url not in parsed_results:
+            continue
+        rar_raw, parsed = parsed_results[page_url]
+        f_info = fandom_map.get(parsed['nameEn'].lower()) if parsed['nameEn'] else None
+        ship_id = None
         if f_info and f_info['no']:
-            ship_id = f"AL-{f_info['no']}"
+            cand = f"AL-{f_info['no']}"
+            if cand not in used_ids:
+                ship_id = cand
             if not parsed['class'] and f_info['classEn']:
                 parsed['class'] = f_info['classEn']
-        else:
-            if rarity_raw == 'DR':
-                ship_id = f'AL-DR{dr_seq:02d}'
-                dr_seq += 1
-            else:
-                ship_id = f'AL-UR{ur_seq:02d}'
-                ur_seq += 1
-        if rarity_raw == 'DR':
-            dr_seq = max(dr_seq, 1)
+
+        if not ship_id:
+            while True:
+                cand = f"AL-{rar_raw}{seq_counters[rar_raw]:03d}"
+                seq_counters[rar_raw] += 1
+                if cand not in used_ids:
+                    ship_id = cand
+                    break
+        used_ids.add(ship_id)
+
+        if not parsed['images']:
+            no_img_ships.append((ship_id, parsed['jp_name'], page_url))
 
         rec = {
             'id': ship_id,
@@ -464,20 +621,12 @@ def main():
         }
         if parsed['plan']:
             rec['plan'] = parsed['plan']
-        tags = list(SHIP_TAGS_BASE.get(parsed['jp_name'], []))
-        if parsed['faction'] == 'その他・コラボ' and 'コラボ艦' not in tags:
-            tags.append('コラボ艦')
-        if len(parsed['images']) >= 6 and '着せ替え多数' not in tags:
-            tags.append('着せ替え多数')
-        if parsed['hasLive2d'] and 'Live2D着せ替えあり' not in tags:
-            tags.append('Live2D着せ替えあり')
-
         rec.update({
             'type': parsed['type'],
             'faction': parsed['faction'],
             'cv': parsed['cv'],
             'illustrator': parsed['illustrator'],
-            'tags': tags,
+            'tags': parsed['tags'],
             'skills': parsed['skills'],
             'acquisition': parsed['acquisition'],
             'sourceInfo': {
@@ -486,32 +635,20 @@ def main():
             },
             'images': parsed['images'],
         })
-        records.append(rec)
+        new_records.append(rec)
 
-    # Check ID uniqueness
-    ids = [r['id'] for r in records]
-    assert len(ids) == len(set(ids)), f'Duplicate IDs found: {ids}'
+    all_records = locked_ships + new_records
+    print(f'Total output records: {len(all_records)} (Locked: {len(locked_ships)}, New: {len(new_records)})')
+    if no_img_ships:
+        print(f'Ships with 0 images ({len(no_img_ships)}): {no_img_ships[:15]}')
 
-    # Print summary diagnostics
-    no_img = [r['name'] for r in records if not r['images']]
-    no_skills = [r['name'] for r in records if not r['skills']]
-    no_class = [r['name'] for r in records if not r['class']]
-    no_cv = [r['name'] for r in records if not r['cv']]
-    print(f'Built {len(records)} records.')
-    print(f'Missing images ({len(no_img)}): {no_img}')
-    print(f'Missing skills ({len(no_skills)}): {no_skills}')
-    print(f'Missing class ({len(no_class)}): {no_class}')
-    print(f'Missing CV ({len(no_cv)}): {no_cv}')
-
-    out_path = os.path.join(BASE_DIR, 'app', 'data.js')
-    os.makedirs(os.path.dirname(out_path), exist_ok=True)
-    with open(out_path, 'w', encoding='utf-8') as f:
+    with open(DATA_PATH, 'w', encoding='utf-8') as f:
         f.write('// アズールレーン 艦船まとめ表 データベース (Generated by tools/build_data.py)\n')
         f.write(f'// Last updated: {TODAY}\n')
         f.write('const SHIPS_DATA = ')
-        json.dump(records, f, ensure_ascii=False, indent=2)
+        json.dump(all_records, f, ensure_ascii=False, indent=2)
         f.write(';\n')
-    print(f'Wrote {out_path}')
+    print(f'Wrote {DATA_PATH}')
 
 
 if __name__ == '__main__':

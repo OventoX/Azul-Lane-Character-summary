@@ -58,6 +58,12 @@
             <option value="UR">UR（通常・計画DR）</option>
             <option value="DR">計画艦 DR のみ</option>
             <option value="UR_ONLY">通常 UR のみ</option>
+            <option value="SSR">SSR（通常・計画PR）</option>
+            <option value="PR">計画艦 PR のみ</option>
+            <option value="SSR_ONLY">通常 SSR のみ</option>
+            <option value="SR">SR</option>
+            <option value="R">R</option>
+            <option value="N">N</option>
           </select>
         </label>
 
@@ -101,6 +107,9 @@
     </section>
 
     <section id="shipGrid" class="ship-grid" aria-live="polite"></section>
+    <div id="loadMoreWrap" class="load-more-wrap hidden">
+      <button type="button" id="loadMoreBtn" class="btn-load-more">もっと表示</button>
+    </div>
     <div id="emptyState" class="empty-state hidden">
       <p>条件に一致する艦船が見つかりませんでした。</p>
     </div>

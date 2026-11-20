@@ -42,7 +42,7 @@ let totalImages = 0;
 let taggedShipsCount = 0;
 const tagCounts = {};
 const rarityCounts = {};
-const planCounts = { UR_NORMAL: 0, DR: 0, PR: 0 };
+const planCounts = { UR_NORMAL: 0, DR: 0, SSR_NORMAL: 0, PR: 0 };
 const factionCounts = {};
 
 ships.forEach((s, idx) => {
@@ -80,8 +80,10 @@ ships.forEach((s, idx) => {
     }
   }
 
-  if (!Array.isArray(s.images) || s.images.length === 0) {
-    errors.push(`${prefix} Missing images`);
+  if (!Array.isArray(s.images)) {
+    errors.push(`${prefix} images must be an array`);
+  } else if (s.images.length === 0) {
+    warnings.push(`${prefix} images is empty (not found on source wiki)`);
   } else {
     totalImages += s.images.length;
     s.images.forEach((img, iIdx) => {
@@ -125,6 +127,7 @@ ships.forEach((s, idx) => {
   if (s.plan === 'DR') planCounts.DR += 1;
   else if (s.plan === 'PR') planCounts.PR += 1;
   else if (s.rarity === 'UR') planCounts.UR_NORMAL += 1;
+  else if (s.rarity === 'SSR') planCounts.SSR_NORMAL += 1;
   factionCounts[s.faction] = (factionCounts[s.faction] || 0) + 1;
 });
 
@@ -134,6 +137,7 @@ console.log(`Total images: ${totalImages}`);
 console.log(`Tagged ships: ${taggedShipsCount}/${ships.length}`);
 console.log('By rarity:', rarityCounts);
 console.log('UR breakdown:', { '通常UR': planCounts.UR_NORMAL, '計画艦DR': planCounts.DR });
+console.log('SSR breakdown:', { '通常SSR': planCounts.SSR_NORMAL, '計画艦PR': planCounts.PR });
 console.log('By faction:', factionCounts);
 console.log('By tag:', tagCounts);
 
