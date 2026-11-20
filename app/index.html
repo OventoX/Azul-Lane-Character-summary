@@ -1,0 +1,123 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>アズールレーン 艦船まとめ表</title>
+  <meta name="description" content="『アズールレーン』の艦船（UR・計画艦DR）データベース・スキル・着せ替えまとめ">
+  <meta name="theme-color" content="#0f2744">
+  <link rel="manifest" href="manifest.json">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@400;500;700&family=Noto+Serif+JP:wght@600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <header class="naval-header">
+    <div class="header-inner">
+      <div class="brand">
+        <svg class="brand-emblem" viewBox="0 0 64 64" width="44" height="44" aria-hidden="true">
+          <circle cx="32" cy="32" r="29" fill="none" stroke="#d4af37" stroke-width="2" stroke-dasharray="4 2"/>
+          <circle cx="32" cy="32" r="23" fill="#0b1f3a" stroke="#f0d078" stroke-width="1.5"/>
+          <path d="M32 14v36M22 25h20M18 37c0 8 6.5 13 14 13s14-5 14-13" fill="none" stroke="#f8fafc" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"/>
+          <circle cx="32" cy="14" r="3" fill="#d4af37"/>
+        </svg>
+        <div>
+          <h1 class="brand-title">アズールレーン 艦船まとめ表</h1>
+          <p class="brand-sub">Azur Lane Naval Fleet Archive — 第1弾：UR / 計画艦DR</p>
+        </div>
+      </div>
+      <div class="header-stats">
+        <span class="stat-pill" id="totalCountPill">収録: -- 隻</span>
+        <span class="stat-pill stat-pill-gold" id="favCountPill">お気に入り: 0</span>
+      </div>
+    </div>
+  </header>
+
+  <main class="container">
+    <section class="controls-panel" aria-label="検索・フィルター">
+      <div class="search-row">
+        <div class="search-box">
+          <svg class="search-icon" viewBox="0 0 24 24" width="18" height="18" aria-hidden="true">
+            <circle cx="11" cy="11" r="7" fill="none" stroke="currentColor" stroke-width="2"/>
+            <path d="M20 20l-3.5-3.5" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+          </svg>
+          <input type="search" id="searchInput" placeholder="艦名（日/英）・艦級で検索..." autocomplete="off">
+        </div>
+        <button type="button" id="favFilterBtn" class="btn-toggle" aria-pressed="false">
+          <span class="star-icon">★</span> お気に入りのみ
+        </button>
+        <button type="button" id="resetBtn" class="btn-secondary">条件リセット</button>
+      </div>
+
+      <div class="filter-row">
+        <label class="filter-group">
+          <span>レアリティ</span>
+          <select id="rarityFilter">
+            <option value="ALL">すべて</option>
+            <option value="UR">UR（通常・計画DR）</option>
+            <option value="DR">計画艦 DR のみ</option>
+            <option value="UR_ONLY">通常 UR のみ</option>
+          </select>
+        </label>
+
+        <label class="filter-group">
+          <span>艦種</span>
+          <select id="typeFilter">
+            <option value="ALL">すべて</option>
+          </select>
+        </label>
+
+        <label class="filter-group">
+          <span>陣営</span>
+          <select id="factionFilter">
+            <option value="ALL">すべて</option>
+          </select>
+        </label>
+
+        <label class="filter-group">
+          <span>並び順</span>
+          <select id="sortSelect">
+            <option value="id-asc">図鑑No. / ID 昇順</option>
+            <option value="rarity-desc">レアリティ順 (DR / UR)</option>
+            <option value="name-asc">名前順 (あ〜ん / A-Z)</option>
+          </select>
+        </label>
+      </div>
+
+      <div class="result-bar">
+        <span id="resultCountText">0 隻を表示中</span>
+      </div>
+    </section>
+
+    <section id="shipGrid" class="ship-grid" aria-live="polite"></section>
+    <div id="emptyState" class="empty-state hidden">
+      <p>条件に一致する艦船が見つかりませんでした。</p>
+    </div>
+  </main>
+
+  <footer class="naval-footer">
+    <p>個人用アズールレーン艦船データベース（静的サイト / オフライン対応）</p>
+    <p class="footer-note">出典：<a href="https://azurlane.wikiru.jp/" target="_blank" rel="noopener noreferrer">アズールレーン攻略Wiki (wikiru)</a> / <a href="https://blhx.fandom.com/wiki/Full_Ship_List" target="_blank" rel="noopener noreferrer">Azur Lane Wiki (Fandom)</a></p>
+  </footer>
+
+  <!-- 詳細モーダル -->
+  <div id="detailModal" class="modal hidden" role="dialog" aria-modal="true" aria-labelledby="modalTitle">
+    <div class="modal-backdrop" id="modalBackdrop"></div>
+    <div class="modal-dialog">
+      <button type="button" class="modal-close" id="modalCloseBtn" aria-label="閉じる">&times;</button>
+      <div class="modal-body" id="modalBody"></div>
+    </div>
+  </div>
+
+  <!-- 画像拡大ライトボックス -->
+  <div id="lightbox" class="lightbox hidden" role="dialog" aria-modal="true" aria-label="画像拡大表示">
+    <button type="button" class="lightbox-close" id="lightboxCloseBtn" aria-label="拡大を閉じる">&times;</button>
+    <img id="lightboxImg" src="" alt="">
+    <p id="lightboxCaption" class="lightbox-caption"></p>
+  </div>
+
+  <script src="data.js"></script>
+  <script src="app.js"></script>
+</body>
+</html>

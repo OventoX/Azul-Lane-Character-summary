@@ -1,0 +1,17 @@
+{
+  "name": "アズールレーン 艦船まとめ表",
+  "short_name": "アズレンまとめ",
+  "description": "『アズールレーン』の艦船（UR・計画艦DR）データ・スキル・スキン画像をまとめた個人用データベース",
+  "start_url": "./index.html",
+  "display": "standalone",
+  "background_color": "#071426",
+  "theme_color": "#0f2744",
+  "icons": [
+    {
+      "src": "data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220%200%20100%20100%22><rect width=%22100%22 height=%22100%22 rx=%2220%22 fill=%22%23071426%22/><circle cx=%2250%22 cy=%2250%22 r=%2236%22 fill=%22none%22 stroke=%22%23d4af37%22 stroke-width=%224%22/><path d=%22M50 22v56M34 38h32M28 58c0 12 10 20 22 20s22-8 22-20%22 fill=%22none%22 stroke=%22%23f8fafc%22 stroke-width=%225%22 stroke-linecap=%22round%22/></svg>",
+      "sizes": "192x192 512x512",
+      "type": "image/svg+xml",
+      "purpose": "any maskable"
+    }
+  ]
+}
