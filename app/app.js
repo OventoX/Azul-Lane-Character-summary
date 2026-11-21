@@ -18,6 +18,7 @@
   const PAGE_SIZE = 120;
   let displayLimit = PAGE_SIZE;
   const selectedTags = new Set();
+  let tagMatchMode = 'OR';
 
   const TAG_GROUPS = [
     {
@@ -53,6 +54,7 @@
     factionFilter: document.getElementById('factionFilter'),
     sortSelect: document.getElementById('sortSelect'),
     tagToggleBtn: document.getElementById('tagToggleBtn'),
+    tagMatchModeBtn: document.getElementById('tagMatchModeBtn'),
     selectedTagCountBadge: document.getElementById('selectedTagCountBadge'),
     clearTagsBtn: document.getElementById('clearTagsBtn'),
     tagFilterPanel: document.getElementById('tagFilterPanel'),
@@ -220,8 +222,19 @@
       if (faction !== 'ALL' && s.faction !== faction) return false;
       if (selectedTags.size > 0) {
         const shipTags = s.tags || [];
-        for (const t of selectedTags) {
-          if (!shipTags.includes(t)) return false;
+        if (tagMatchMode === 'AND') {
+          for (const t of selectedTags) {
+            if (!shipTags.includes(t)) return false;
+          }
+        } else {
+          let matched = false;
+          for (const t of selectedTags) {
+            if (shipTags.includes(t)) {
+              matched = true;
+              break;
+            }
+          }
+          if (!matched) return false;
         }
       }
       if (q) {
@@ -540,6 +553,13 @@
     const isHidden = els.tagFilterPanel.classList.toggle('hidden');
     els.tagToggleBtn.setAttribute('aria-expanded', String(!isHidden));
     els.tagToggleBtn.classList.toggle('active', !isHidden || selectedTags.size > 0);
+  });
+
+  els.tagMatchModeBtn.addEventListener('click', () => {
+    tagMatchMode = tagMatchMode === 'OR' ? 'AND' : 'OR';
+    els.tagMatchModeBtn.textContent = tagMatchMode === 'OR' ? '一致: いずれか (OR)' : '一致: すべて (AND)';
+    els.tagMatchModeBtn.classList.toggle('active', tagMatchMode === 'AND');
+    renderGrid(true);
   });
 
   els.tagFilterPanel.addEventListener('click', e => {
